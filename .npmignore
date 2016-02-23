@@ -42,6 +42,9 @@ jsconfig.json
 .eslintrc
 .jscsrc
 .tern-project
-config.js
 
 src
+
+config/config.json
+config/acl.json
+hue-bot.log
