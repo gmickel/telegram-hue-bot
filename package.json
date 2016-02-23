@@ -1,0 +1,54 @@
+{
+  "name": "telegram-hue-bot",
+  "version": "0.0.1",
+  "description": "Node.js Telegram Bot communicating with the Philips Hue Bridge and Lights",
+  "main": "dist/index.js",
+  "bugs": {
+    "url": "https://github.com/gmickel/telegram-hue-bot/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gmickel/telegram-hue-bot"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/mocha --opts .mocha.opts test",
+    "coverage": "istanbul cover --report text --report html --hook-run-in-context ./node_modules/mocha/bin/_mocha -- --reporter dot test/*.js",
+    "compile": "babel -d dist/ src/",
+    "compileDev": "babel --presets es2015-node -d dist/ src/ --source-maps true",
+    "fix": "eslint --fix -c ./.eslintrc src test",
+    "lint": "eslint -c ./.eslintrc src test --ext .js && jscs src test",
+    "prepublish": "npm run compile",
+    "preversion": "npm run lint && npm run compile",
+    "watch": "babel --presets es2015-node -d dist/ src/ --watch --source-maps true",
+    "package:check": "./node_modules/.bin/ncu",
+    "package:upgrade": "./node_modules/.bin/ncu -u",
+    "postinstall": "npm run compile",
+    "pre-commit": "npm run test"
+  },
+  "author": "Gordon Mickel <gordon.mickel@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.5.1",
+    "babel-eslint": "^5.0.0",
+    "babel-preset-es2015-node": "~4",
+    "babel-register": "^6.5.2",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.2.0",
+    "eslint": "^2.2.0",
+    "eslint-config-airbnb": "^6.0.1",
+    "eslint-plugin-react": "^4.0.0",
+    "isparta": "^4.0.0",
+    "istanbul": "^0.4.2",
+    "jscs": "^2.10.1",
+    "mocha": "^2.4.5",
+    "npm-check-updates": "^2.5.8"
+  },
+  "dependencies": {
+    "axios": "^0.9.1",
+    "hugh": "^0.5.6",
+    "node-telegram-bot-api": "^0.20.1"
+  },
+  "engines": {
+    "node": ">=4.2.0"
+  }
+}

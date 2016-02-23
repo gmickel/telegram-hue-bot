@@ -1,0 +1,27 @@
+{
+  "esnext": true,
+  "preset": "airbnb",
+  "fileExtensions": [".js"],
+
+  "validateQuoteMarks": { "mark": "'", "escape": true, "ignoreJSX": true },
+  "requireSemicolons": null,
+  "requireCurlyBraces": true,
+  "requireParenthesesAroundIIFE": true,
+  "requireTrailingComma": null,
+  "maximumLineLength": 120,
+  "validateLineBreaks": "LF",
+  "validateIndentation": 2,
+  "disallowTrailingComma": true,
+  "disallowKeywords": ["with"],
+  "disallowSpacesInsideObjectBrackets": null,
+  "disallowImplicitTypeConversion": ["string"],
+  "requireCamelCaseOrUpperCaseIdentifiers": null,
+
+  "safeContextKeyword": "that",
+
+  "excludeFiles": [
+    "dist/**",
+    "node_modules/**",
+    "lib/**"
+  ]
+}

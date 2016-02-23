@@ -1,0 +1,8 @@
+./test/*.js
+
+--reporter list
+--ui bdd
+--recursive
+--timeout 15000
+--bail
+--sort
