@@ -1,0 +1,13 @@
+{
+  "telegram": {
+    "botToken": ""
+  },
+  "bot": {
+    "password": "",
+    "owner": 0
+  },
+  "hue": {
+    "host": "",
+    "user": ""
+  }
+}
