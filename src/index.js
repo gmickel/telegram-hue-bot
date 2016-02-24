@@ -7,9 +7,10 @@ import fs from 'fs';
 import acl from './lib/acl';
 import config from './lib/config';
 import logger from './lib/logger';
-import _ from 'lodash';
+import hueApi from './lib/hue';
+import validCommands from './lib/validCommands';
 
-const state = new hugh.LightState();
+import _ from 'lodash';
 
 const bot = new TelegramBot(config.telegram.botToken, { polling: true });
 
@@ -102,41 +103,96 @@ bot.onText(/\/auth (.+)/, function(msg, match) {
 
 
 
-bot.onText(/\/echo (.+)/, (msg, match) => {
+bot.onText(/\/list (.+)/, (msg, match) => {
   const fromId = msg.from.id;
+  logger.info(`user: ${fromId}, sent ${match[0]}`);
   if (!verifyUser(fromId)) {
     return;
   }
 
-  const resp = match[1];
-  bot.sendMessage(fromId, resp);
-  logger.info('user: %s, message: sent \'/start\' command', fromId);
+  if (validCommands.list.indexOf(match[1]) === -1) {
+    const error = new Error('Resource doesn\'t exist');
+    replyWithError(fromId, error);
+    return;
+  }
+
+  hueApi.list(match)
+    .then((message) => {
+      sendMessage(fromId, message);
+    });
 });
 
-bot.onText(/\/love/, (msg) => {
+bot.onText(/\/group (.+)/, (msg, match) => {
   const fromId = msg.from.id;
+  logger.info(`user: ${fromId}, sent ${match[0]}`);
   if (!verifyUser(fromId)) {
     return;
   }
 
-  const chatId = msg.chat.id;
-  const opts = {
-    reply_to_message_id: msg.message_id,
-    reply_markup: JSON.stringify({
-      keyboard: [
-        ['Yes, you are the bot of my life ❤'],
-        ['No, sorry there is another one...']]
+  const [groupId, command, value] = match[1].split(' ');
+
+  if (!command) {
+    hueApi.group(groupId)
+      .then((message) => {
+        sendMessage(fromId, message);
+      });
+    return;
+  }
+
+  if (command) {
+    if (validCommands.group.indexOf(command) === -1) {
+      replyWithError(fromId, new Error('Resource doesn\'t exist'));
+      return;
+    }
+  }
+
+  hueApi.groups(groupId, command, value)
+    .then((message) => {
+      sendMessage(fromId, message);
     })
-  };
-  bot.sendMessage(chatId, 'Do you love me?', opts);
+    .catch((error) => {
+      replyWithError(fromId, new Error(error));
+    });
+});
+
+bot.onText(/\/light (.+)/, (msg, match) => {
+  const fromId = msg.from.id;
+  logger.info(`user: ${fromId}, sent ${match[0]}`);
+  if (!verifyUser(fromId)) {
+    return;
+  }
+
+  const [lightId, command, value] = match[1].split(' ');
+
+  if (!command) {
+    hueApi.light(lightId)
+      .then((message) => {
+        sendMessage(fromId, message);
+      });
+    return;
+  }
+
+  if (command) {
+    if (validCommands.light.indexOf(command) === -1) {
+      replyWithError(fromId, new Error('Resource doesn\'t exist'));
+      return;
+    }
+  }
+
+  hueApi.lights(lightId, command, value)
+    .then((message) => {
+      sendMessage(fromId, message);
+    })
+    .catch((error) => {
+      replyWithError(fromId, new Error(error));
+    });
 });
 
 /*
- * handle removing the custom keyboard
+ * default message sender with markdown
  */
-function replyWithError(userId, err) {
-  logger.warn('user: %s message: %s', userId, err.message);
-  return bot.sendMessage(userId, '*Oh no!* ' + err, {
+function sendMessage(userId, message) {
+  return bot.sendMessage(userId, message, {
     parse_mode: 'Markdown',
     reply_markup: {
       hide_keyboard: true
@@ -144,3 +200,15 @@ function replyWithError(userId, err) {
   });
 }
 
+/*
+ * handle removing the custom keyboard
+ */
+function replyWithError(userId, err) {
+  logger.warn('user: %s message: %s', userId, err.message);
+  return bot.sendMessage(userId, '*Error:* ' + err.message, {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      hide_keyboard: true
+    }
+  });
+}
