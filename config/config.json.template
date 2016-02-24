@@ -8,6 +8,34 @@
   },
   "hue": {
     "host": "",
-    "user": ""
+    "user": "",
+    "presets": {
+      "colors": {
+        "red": {
+          "hue": 65535,
+          // red
+          "sat": 255,
+          "bri": 255
+        },
+        "green": {
+          "hue": 25500,
+          // green
+          "sat": 255,
+          "bri": 255
+        },
+        "blue": {
+          "hue": 46920,
+          // blue
+          "sat": 255,
+          "bri": 255
+        },
+        "yellow": {
+          "hue": 12000,
+          // yellow
+          "sat": 255,
+          "bri": 255
+        }
+      }
+    }
   }
 }
