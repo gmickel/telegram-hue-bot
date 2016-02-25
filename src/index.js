@@ -1,28 +1,47 @@
 /* eslint-disable no-unused-expressions */
 'use strict';
 
-import hugh from 'hugh';
 import TelegramBot from 'node-telegram-bot-api';
 import fs from 'fs';
 import acl from './lib/acl';
 import config from './lib/config';
 import logger from './lib/logger';
-import hueApi from './lib/hue';
+import Hue from './lib/hue';
 import validCommands from './lib/validCommands';
 
 import _ from 'lodash';
 
 const bot = new TelegramBot(config.telegram.botToken, { polling: true });
+const hueApi = new Hue(config);
 
-// Todo: decorate
+/*
+ * default message sender with markdown
+ */
+function sendMessage(userId, message) {
+  return bot.sendMessage(userId, message, {
+    parse_mode: 'Markdown'
+  });
+}
 
+/*
+ * handle removing the custom keyboard
+ */
+function replyWithError(userId, err) {
+  logger.warn('user: %s message: %s', userId, err.message);
+  return bot.sendMessage(userId, '*Error:* ' + err.message, {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      hide_keyboard: true
+    }
+  });
+}
 
 /*
  * check to see is user is authenticated
  * returns true/false
  */
 function isAuthorized(userId) {
-  return _.some(acl.allowedUsers, { 'id': userId });
+  return _.some(acl.allowedUsers, { id: userId });
 }
 
 /*
@@ -30,7 +49,7 @@ function isAuthorized(userId) {
  * returns true/false
  */
 function isRevoked(userId) {
-  return _.some(acl.revokedUsers, { 'id': userId });
+  return _.some(acl.revokedUsers, { id: userId });
 }
 
 /*
@@ -38,7 +57,9 @@ function isRevoked(userId) {
  */
 function verifyUser(userId) {
   if (_.some(acl.allowedUsers, { id: userId }) !== true) {
-    replyWithError(userId, new Error('You are not authorized to use this bot.\n`/auth [password]` to authorize.'));
+    replyWithError(
+      userId,
+      new Error('You are not authorized to use this bot.\n`/auth [password]` to authorize.'));
     return false;
   }
 
@@ -49,7 +70,7 @@ function verifyUser(userId) {
  * save access control list
  */
 function updateACL() {
-  fs.writeFile(__dirname + '/../config/acl.json', JSON.stringify(acl), function(err) {
+  fs.writeFile(`${__dirname}/../config/acl.json`, JSON.stringify(acl), (err) => {
     if (err) {
       throw new Error(err);
     }
@@ -57,8 +78,6 @@ function updateACL() {
     logger.info('the access control list was updated');
   });
 }
-
-// TODO: persist this for prefilling
 
 /*
  * get the bot name
@@ -74,65 +93,72 @@ bot.getMe()
 /*
  * handle authorization
  */
-bot.onText(/\/auth (.+)/, function(msg, match) {
-  var fromId = msg.from.id;
-  var password = match[1];
+bot.onText(/\/auth (.+)/, (msg, match) => {
+  const fromId = msg.from.id;
+  const password = match[1];
 
-  var message = [];
+  const message = [];
 
   if (isAuthorized(fromId)) {
     message.push('Already authorized.');
     message.push('Type /start to begin.');
-    return bot.sendMessage(fromId, message.join('\n'));
+    return sendMessage(fromId, message.join('\n'));
   }
 
   // make sure the user is not banned
-  /* if (isRevoked(fromId)) {
-    message.push('Your access has been revoked and cannot reauthorize.');
+  if (isRevoked(fromId)) {
+    message.push('Your access has been revoked, you cannot reauthorize.');
     message.push('Please reach out to the bot owner for support.');
-    return bot.sendMessage(fromId, message.join('\n'));
-  } */
+    logger.warn(`The revoked user: ${fromId} tried to reauthorize`);
+    return sendMessage(fromId, message.join('\n'));
+  }
 
   if (password !== config.bot.password) {
+    logger.warn(`The user: ${fromId} entered an invalid password.`);
     return replyWithError(fromId, new Error('Invalid password.'));
   }
 
   acl.allowedUsers.push(msg.from);
   updateACL();
-
-  /*if (acl.allowedUsers.length === 1) {
-    promptOwnerConfig(fromId);
-  }*/
-
-  if (config.bot.owner) {
-    bot.sendMessage(config.bot.owner, getTelegramName(msg.from) + ' has been granted access.');
-  }
-
   message.push('You have been authorized.');
   message.push('Type /start to begin.');
 
-  return bot.sendMessage(fromId, message.join('\n'));
+  return sendMessage(fromId, message.join('\n'));
 });
 
+/**
+ * matches start command
+ */
 bot.onText(/\/start/, (msg) => {
   const fromId = msg.from.id;
   if (!verifyUser(fromId)) {
     return;
   }
 
-  const chatId = msg.chat.id;
-  const opts = {
-    reply_to_message_id: msg.message_id,
-    reply_markup: JSON.stringify({
-      keyboard: [
-        ['/all off'],
-        ['/all on']]
-    })
-  };
-  bot.sendMessage(chatId, 'Hue bot started', opts);
+  hueApi.getGroups().then((groupIds) => {
+    const markup = [['/all on', '/all off']];
+
+    _.forEach(groupIds, (groupId) => {
+      markup.push([`/g ${groupId} on`, `/g ${groupId} off`]);
+    });
+
+    const chatId = msg.chat.id;
+    const opts = {
+      reply_to_message_id: msg.message_id,
+      reply_markup: JSON.stringify({
+        keyboard: markup,
+        resize_keyboard: true
+      })
+    };
+    bot.sendMessage(chatId, 'Hue bot started', opts);
+  });
 });
 
-bot.onText(/\/list (.+)/, (msg, match) => {
+/**
+ * matches the list command
+ * valid resources are lights, groups and scenes
+ */
+bot.onText(/\/(?:ls|list)? (.+)/, (msg, match) => {
   const fromId = msg.from.id;
   logger.info(`user: ${fromId}, sent ${match[0]}`);
   if (!verifyUser(fromId)) {
@@ -151,7 +177,11 @@ bot.onText(/\/list (.+)/, (msg, match) => {
     });
 });
 
-bot.onText(/\/all (.+)/, (msg, match) => {
+/**
+ * matches the all command
+ * used to easily manipulate group 0 (all lights)
+ */
+bot.onText(/\/a(?:ll)? (.+)/, (msg, match) => {
   const fromId = msg.from.id;
   logger.info(`user: ${fromId}, sent ${match[0]}`);
   if (!verifyUser(fromId)) {
@@ -177,7 +207,11 @@ bot.onText(/\/all (.+)/, (msg, match) => {
     });
 });
 
-bot.onText(/\/group (.+)/, (msg, match) => {
+/**
+ * matches the group command
+ * used to manipulate groups
+ */
+bot.onText(/\/g(?:roup)? (.+)/, (msg, match) => {
   const fromId = msg.from.id;
   logger.info(`user: ${fromId}, sent ${match[0]}`);
   if (!verifyUser(fromId)) {
@@ -210,7 +244,12 @@ bot.onText(/\/group (.+)/, (msg, match) => {
     });
 });
 
-bot.onText(/\/light (.+)/, (msg, match) => {
+/**
+ * matches the light command
+ * used to get the attributes of a light
+ */
+
+bot.onText(/\/l(?:ight)? (.+)/, (msg, match) => {
   const fromId = msg.from.id;
   logger.info(`user: ${fromId}, sent ${match[0]}`);
   if (!verifyUser(fromId)) {
@@ -242,28 +281,3 @@ bot.onText(/\/light (.+)/, (msg, match) => {
       replyWithError(fromId, new Error(error));
     });
 });
-
-/*
- * default message sender with markdown
- */
-function sendMessage(userId, message) {
-  return bot.sendMessage(userId, message, {
-    parse_mode: 'Markdown',
-    reply_markup: {
-      hide_keyboard: true
-    }
-  });
-}
-
-/*
- * handle removing the custom keyboard
- */
-function replyWithError(userId, err) {
-  logger.warn('user: %s message: %s', userId, err.message);
-  return bot.sendMessage(userId, '*Error:* ' + err.message, {
-    parse_mode: 'Markdown',
-    reply_markup: {
-      hide_keyboard: true
-    }
-  });
-}

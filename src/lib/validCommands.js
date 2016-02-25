@@ -11,7 +11,8 @@ export default {
     'bri',
     'sat',
     'hue',
-    'rgb'
+    'rgb',
+    'scene'
   ],
   light: [
     'on',

@@ -1,13 +1,21 @@
 'use strict';
 
 import hugh from 'hugh';
-import logger from './logger';
-import config from './config';
 import MessageBuilder from './messageBuilder';
 
-class Hugh {
-  constructor(host, username) {
-    this.hueApi = new hugh.HueApi(host, username);
+class Hue {
+  constructor(config) {
+    this.hueApi = new hugh.HueApi(config.hue.host, config.hue.user);
+  }
+
+  getGroups() {
+    return this.hueApi.groups()
+      .then((results) => {
+        return MessageBuilder.getGroupIds(results);
+      })
+      .catch((error) => {
+        return error.message;
+      });
   }
 
   list(args) {
@@ -95,6 +103,28 @@ class Hugh {
           });
       }
 
+      case 'hue': {
+        state.hue(parseInt(value));
+        return this.hueApi.setLightState(lightId, state)
+          .then(() => {
+            return 'Command successful';
+          })
+          .catch((error) => {
+            return error.message;
+          });
+      }
+
+      case 'sat': {
+        state.sat(parseInt(value));
+        return this.hueApi.setLightState(lightId, state)
+          .then(() => {
+            return 'Command successful';
+          })
+          .catch((error) => {
+            return error.message;
+          });
+      }
+
       case 'preset': {
         const preset = config.hue.presets.colors[value];
         if (!preset) {
@@ -128,7 +158,7 @@ class Hugh {
   }
 
   groups(groupId, command, value) {
-    const state = new hugh.LightState();
+    const state = new hugh.GroupState();
     switch (command) {
       case 'on': {
         state.on();
@@ -163,6 +193,39 @@ class Hugh {
           });
       }
 
+      case 'hue': {
+        state.hue(parseInt(value));
+        return this.hueApi.setGroupState(groupId, state)
+          .then(() => {
+            return 'Command successful';
+          })
+          .catch((error) => {
+            return error.message;
+          });
+      }
+
+      case 'sat': {
+        state.sat(parseInt(value));
+        return this.hueApi.setGroupState(groupId, state)
+          .then(() => {
+            return 'Command successful';
+          })
+          .catch((error) => {
+            return error.message;
+          });
+      }
+
+      case 'scene': {
+        state.scene(value);
+        return this.hueApi.setGroupState(groupId, state)
+          .then(() => {
+            return 'Command successful';
+          })
+          .catch((error) => {
+            return error.message;
+          });
+      }
+
       case 'preset': {
         const preset = config.hue.presets.colors[value];
         if (!preset) {
@@ -186,4 +249,4 @@ class Hugh {
   }
 }
 
-export default new Hugh(config.hue.host, config.hue.user);
+export default Hue;
