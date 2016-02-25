@@ -29,6 +29,12 @@ class MessageBuilder {
     }).join('\n');
   }
 
+  getGroupIds(groupsObj) {
+    return _.map(groupsObj, (group, id) => {
+      return id;
+    })
+  }
+
   scenes(scenesObj) {
     return _.map(scenesObj, (scene, id) => {
       return `*${scene.name}* - id: ${id}
