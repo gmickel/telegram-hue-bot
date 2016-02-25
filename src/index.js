@@ -58,6 +58,19 @@ function updateACL() {
   });
 }
 
+// TODO: persist this for prefilling
+
+/*
+ * get the bot name
+ */
+bot.getMe()
+  .then((msg) => {
+    logger.info(`hue bot ${msg.username} initialized`);
+  })
+  .catch((err) => {
+    throw new Error(err);
+  });
+
 /*
  * handle authorization
  */
@@ -101,7 +114,23 @@ bot.onText(/\/auth (.+)/, function(msg, match) {
   return bot.sendMessage(fromId, message.join('\n'));
 });
 
+bot.onText(/\/start/, (msg) => {
+  const fromId = msg.from.id;
+  if (!verifyUser(fromId)) {
+    return;
+  }
 
+  const chatId = msg.chat.id;
+  const opts = {
+    reply_to_message_id: msg.message_id,
+    reply_markup: JSON.stringify({
+      keyboard: [
+        ['/all off'],
+        ['/all on']]
+    })
+  };
+  bot.sendMessage(chatId, 'Hue bot started', opts);
+});
 
 bot.onText(/\/list (.+)/, (msg, match) => {
   const fromId = msg.from.id;
@@ -119,6 +148,32 @@ bot.onText(/\/list (.+)/, (msg, match) => {
   hueApi.list(match)
     .then((message) => {
       sendMessage(fromId, message);
+    });
+});
+
+bot.onText(/\/all (.+)/, (msg, match) => {
+  const fromId = msg.from.id;
+  logger.info(`user: ${fromId}, sent ${match[0]}`);
+  if (!verifyUser(fromId)) {
+    return;
+  }
+
+  const groupId = 0;
+  const command = match[1];
+
+  if (command) {
+    if (validCommands.group.indexOf(command) === -1) {
+      replyWithError(fromId, new Error('Resource doesn\'t exist'));
+      return;
+    }
+  }
+
+  hueApi.groups(groupId, command)
+    .then((message) => {
+      sendMessage(fromId, message);
+    })
+    .catch((error) => {
+      replyWithError(fromId, new Error(error));
     });
 });
 
