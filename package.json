@@ -47,7 +47,7 @@
   "dependencies": {
     "axios": "^0.9.1",
     "fs-extra": "^0.26.5",
-    "hugh": "^0.5.6",
+    "hugh": "^0.7.0",
     "lodash": "^4.5.1",
     "node-telegram-bot-api": "^0.20.1",
     "winston": "^2.1.1"
