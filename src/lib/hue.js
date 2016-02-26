@@ -5,6 +5,7 @@ import MessageBuilder from './messageBuilder';
 
 class Hue {
   constructor(config) {
+    this.config = config;
     this.hueApi = new hugh.HueApi(config.hue.host, config.hue.user);
   }
 
@@ -126,7 +127,7 @@ class Hue {
       }
 
       case 'preset': {
-        const preset = config.hue.presets.colors[value];
+        const preset = this.config.hue.presets.colors[value];
         if (!preset) {
           return Promise.reject(`Invalid preset (${value})`);
         }
@@ -227,7 +228,7 @@ class Hue {
       }
 
       case 'preset': {
-        const preset = config.hue.presets.colors[value];
+        const preset = this.config.hue.presets.colors[value];
         if (!preset) {
           return Promise.reject(`Invalid preset (${value})`);
         }

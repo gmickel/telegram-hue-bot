@@ -8,8 +8,25 @@ const configFileTemplate = `${configFile}.template`;
 
 let config;
 
+function updateConfig(config) {
+  fs.writeFile(`${__dirname}/../../config/config.json`, JSON.stringify(config, null, 4), (err) => {
+    if (err) {
+      throw new Error(err);
+    }
+
+    logger.info('the config file has been updated, please start the telegram-hue-bot again');
+    process.exit(0);
+  });
+}
+
+function sleep(time) {
+  return new Promise(resolve => {
+    setTimeout(resolve, time)
+  })
+}
+
 function discoverBridge() {
-  logger.info('Hue Bridge host not specified, running Bridge discovery');
+  logger.warn('Hue Bridge host not specified, running Bridge discovery');
   return hugh.discoverBridges()
     .then((bridges) => {
       logger.info(`Found the following bridges, using the first one
@@ -19,18 +36,21 @@ function discoverBridge() {
         logger.info(`${bridge.internalipaddress}`);
       });
     })
+    .catch((error) => {
+      throw new Error(error.message);
+    })
 }
 
 function createUser() {
   const hueApi = new hugh.HueApi(config.hue.host);
-  return hueApi.createUser({devicetype: 'telegram-hue-bot#node'})
+  return hueApi.createUser({ devicetype: 'telegram-hue-bot#node' })
     .then((results) => {
       config.hue.user = results[0].success.username;
       logger.info(`${config.hue.user} created on the Hue bridge`);
     })
     .catch((error) => {
       throw new Error(error.message);
-    })
+    });
 }
 
 try {
@@ -59,32 +79,32 @@ if (_.isEmpty(config.bot.password)) {
   throw new Error('Please enter a password for your bot in the config file');
 }
 
-if (_.isEmpty(config.hue.host) && _.isEmpty(config.hue.user)) {
+if (_.isEmpty(config.hue.host) || _.isEmpty(config.hue.user)) {
   discoverBridge()
+    .then(() => {
+      if (_.isEmpty(config.hue.user)) {
+        const delay = 20000;
+        logger.warn('Hue Bridge user not specified, creating user');
+        logger.warn(`Starting create user in ${delay / 1000} seconds, please press the link button on your Hue Bridge`);
+        return sleep(delay);
+      } else {
+        updateConfig(config);
+      }
+    })
     .then(() => {
       return createUser();
     })
     .then(() => {
-      // TODO: do write here
-      logger.info('config', config);
+      updateConfig(config);
     })
     .catch((error) => {
       process.nextTick(() => {
-        logger.error('Please press the link button on your hue Bridge and try again');
-        throw new Error(error.message);
+        logger.error(error.message);
+        process.exit(0);
       });
     })
 }
 
-/*
-if (_.isEmpty(config.hue.host)) {
-  discoverBridge();
-}
+logger.info('Config is valid, starting bot');
 
-if (_.isEmpty(config.hue.user)) {
-  discoverBridge();
-}
-*/
-
-// export something better
 export default config;

@@ -28,7 +28,7 @@ function sendMessage(userId, message) {
  */
 function replyWithError(userId, err) {
   logger.warn('user: %s message: %s', userId, err.message);
-  return bot.sendMessage(userId, '*Error:* ' + err.message, {
+  return bot.sendMessage(userId, `*Error:* ${err.message}`, {
     parse_mode: 'Markdown',
     reply_markup: {
       hide_keyboard: true
