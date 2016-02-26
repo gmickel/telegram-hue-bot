@@ -67,16 +67,64 @@ function verifyUser(userId) {
 }
 
 /*
+ * prompt for admin message
+ */
+function promptOwnerConfig(userId) {
+  const message = [`Your User ID is: ${userId}`];
+  message.push('Please add your User ID to the config file in the field labeled \'owner\'.');
+  message.push('This will allow you to use the admin commands.');
+  message.push('Please restart the bot once you have updated the config file.');
+  return bot.sendMessage(userId, message.join('\n'));
+}
+
+/*
+ * verify admin of the bot
+ */
+function verifyAdmin(userId) {
+  if (isAuthorized(userId)) {
+    promptOwnerConfig(userId);
+  }
+
+  if (config.bot.owner !== userId) {
+    replyWithError(userId, new Error('You are not authorized to use admin commands'));
+    return false;
+  }
+
+  return true;
+}
+
+/*
  * save access control list
  */
 function updateACL() {
-  fs.writeFile(`${__dirname}/../config/acl.json`, JSON.stringify(acl), (err) => {
+  fs.writeFile(`${__dirname}/../config/acl.json`, JSON.stringify(acl, null, 4), (err) => {
     if (err) {
       throw new Error(err);
     }
 
     logger.info('the access control list was updated');
   });
+}
+
+/*
+ * get telegram name
+ */
+function getTelegramName(user) {
+  let lastname = '';
+  if (typeof user === 'object') {
+    lastname = (user.last_name !== undefined) ? ` ${user.last_name}` : '';
+    return user.username || (user.first_name + lastname);
+  }
+
+  if (typeof user === 'number') {
+    const aclUser = _.filter(
+      acl.allowedUsers,
+      function filterAclUsers(item) { return item.id === user; })[0];
+    lastname = (aclUser.last_name !== undefined) ? ` ${aclUser.last_name} ` : '';
+    return aclUser.username || (aclUser.first_name + lastname);
+  }
+
+  return 'unknown user';
 }
 
 /*
@@ -89,6 +137,7 @@ bot.getMe()
   .catch((err) => {
     throw new Error(err);
   });
+
 
 /*
  * handle authorization
@@ -120,6 +169,13 @@ bot.onText(/\/auth (.+)/, (msg, match) => {
 
   acl.allowedUsers.push(msg.from);
   updateACL();
+
+  if (acl.allowedUsers.length === 1) {
+    if (!config.bot.owner) {
+      promptOwnerConfig(fromId);
+    }
+  }
+
   message.push('You have been authorized.');
   message.push('Type /start to begin.');
 
