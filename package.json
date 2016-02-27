@@ -1,6 +1,6 @@
 {
   "name": "telegram-hue-bot",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Node.js Telegram Bot communicating with the Philips Hue Bridge and Lights",
   "main": "dist/index.js",
   "bugs": {
@@ -17,6 +17,7 @@
     "compileDev": "babel --presets es2015-node -d dist/ src/ --source-maps true",
     "fix": "eslint --fix -c ./.eslintrc src test",
     "lint": "eslint -c ./.eslintrc src test --ext .js && jscs src test",
+    "jscs": "jscs src test",
     "prepublish": "npm run compile",
     "preversion": "npm run lint && npm run compile",
     "watch": "babel --presets es2015-node -d dist/ src/ --watch --source-maps true",
@@ -27,7 +28,7 @@
     "start": "node dist/index.js"
   },
   "author": "Gordon Mickel <gordon.mickel@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.5.1",
     "babel-eslint": "^5.0.0",

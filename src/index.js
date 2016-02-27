@@ -120,11 +120,41 @@ function getTelegramName(user) {
     const aclUser = _.filter(
       acl.allowedUsers,
       function filterAclUsers(item) { return item.id === user; })[0];
+
     lastname = (aclUser.last_name !== undefined) ? ` ${aclUser.last_name} ` : '';
     return aclUser.username || (aclUser.first_name + lastname);
   }
 
   return 'unknown user';
+}
+
+/*
+ * Send Help Commands To chat
+ */
+function sendCommands(fromId) {
+  const response = [`Hi ${getTelegramName(fromId)}!`];
+  response.push('Below is a list of commands:');
+  response.push('\n*General commands:*');
+  response.push('/start to start this bot (also displays the keyboard)');
+  response.push('/help displays this list of commands');
+  response.push('\n*List commands:*');
+  response.push('`/ls|list [lights, groups, scenes]` List a resource');
+  response.push('`/l|light [id]` Show a light\'s state and attributes');
+  response.push('`/g|group [id]` Show a group\'s state and attributes');
+  response.push('\n*Light / Group manipulation :*');
+  response.push('`/l|light [id] [command] <value>`');
+  response.push('`/g|group [id] [command] <value>`');
+  response.push('*The following commands are supported for light / group manipulation :*');
+  response.push('`on | off` Turn a light or a group on or off');
+  response.push('`preset <red>` Apply a preset from the config file to a light or group.');
+  response.push('`scene <sceneId>` Apply a scene to a group, use group 0 for the group defined in the scene or use another group to apply the scene to the defined group *and* the specified group.'); // eslint-disable-line max-len
+  response.push('`bri <0-255>` Set the brightness of a group or light.');
+  response.push('`sat <0-255>` Set the saturation of a group or light.');
+  response.push('`hue <0-65535>` Set the hue of a group or light.');
+  response.push('`xy <0-255>` Set the hue x and y coordinates of a color in CIE color space of a group or light.');
+  response.push('`rgb <255,255,255>` Set the colour using RGB of a group or light.');
+
+  return bot.sendMessage(fromId, response.join('\n'), { parse_mode: 'Markdown', selective: 2 });
 }
 
 /*
@@ -137,7 +167,6 @@ bot.getMe()
   .catch((err) => {
     throw new Error(err);
   });
-
 
 /*
  * handle authorization
@@ -206,8 +235,21 @@ bot.onText(/\/start/, (msg) => {
         resize_keyboard: true
       })
     };
-    bot.sendMessage(chatId, 'Hue bot started', opts);
+    bot.sendMessage(chatId, 'Hue bot started\n\nEnter /help for a list of commands', opts);
   });
+});
+
+/*
+ * handle help command
+ */
+bot.onText(/\/help/, (msg) => {
+  const fromId = msg.from.id;
+  if (!verifyUser(fromId)) {
+    return;
+  }
+
+  logger.info(`user: ${fromId}, message: sent \'/help\' command`);
+  sendCommands(fromId);
 });
 
 /**
