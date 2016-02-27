@@ -1,6 +1,6 @@
 #Node.js Telegram Bot for communicating with the Philips Hue Bridge and Lights
 
-Bot which lets you or others control their Hue Lights [Hue](http://www.meethue.com/) via the messaging service [Telegram](https://telegram.org/).
+Bot which lets you or others control [Hue](http://www.meethue.com/) Lights via the messaging service [Telegram](https://telegram.org/).
 
 Contact [@BotFather](http://telegram.me/BotFather) on Telegram to create and get a bot token.
 
