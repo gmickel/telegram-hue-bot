@@ -106,7 +106,7 @@ The following command is only valid for groups:
 ## License
 (The MIT License)
 
-Copyright (c) 2016 Gordon Mickel <gordon.mickel@gmail.com>
+Copyright (c) 2016 Gordon Mickel
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
