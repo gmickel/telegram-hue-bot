@@ -242,7 +242,7 @@ bot.onText(/\/start/, (msg) => {
 /*
  * handle help command
  */
-bot.onText(/\/help/, (msg) => {
+bot.onText(/^\/help/, (msg) => {
   const fromId = msg.from.id;
   if (!verifyUser(fromId)) {
     return;
@@ -256,7 +256,7 @@ bot.onText(/\/help/, (msg) => {
  * matches the list command
  * valid resources are lights, groups and scenes
  */
-bot.onText(/\/(?:ls|list)? (.+)/, (msg, match) => {
+bot.onText(/^\/(?:ls|list)? (.+)/, (msg, match) => {
   const fromId = msg.from.id;
   logger.info(`user: ${fromId}, sent ${match[0]}`);
   if (!verifyUser(fromId)) {
@@ -279,7 +279,7 @@ bot.onText(/\/(?:ls|list)? (.+)/, (msg, match) => {
  * matches the all command
  * used to easily manipulate group 0 (all lights)
  */
-bot.onText(/\/a(?:ll)? (.+)/, (msg, match) => {
+bot.onText(/^\/a(?:ll)? (.+)/, (msg, match) => {
   const fromId = msg.from.id;
   logger.info(`user: ${fromId}, sent ${match[0]}`);
   if (!verifyUser(fromId)) {
@@ -309,7 +309,7 @@ bot.onText(/\/a(?:ll)? (.+)/, (msg, match) => {
  * matches the group command
  * used to manipulate groups
  */
-bot.onText(/\/g(?:roup)? (.+)/, (msg, match) => {
+bot.onText(/^\/g(?:roup)? (.+)/, (msg, match) => {
   const fromId = msg.from.id;
   logger.info(`user: ${fromId}, sent ${match[0]}`);
   if (!verifyUser(fromId)) {
@@ -347,7 +347,7 @@ bot.onText(/\/g(?:roup)? (.+)/, (msg, match) => {
  * used to get the attributes of a light
  */
 
-bot.onText(/\/l(?:ight)? (.+)/, (msg, match) => {
+bot.onText(/^\/l(?:ight)? (.+)/, (msg, match) => {
   const fromId = msg.from.id;
   logger.info(`user: ${fromId}, sent ${match[0]}`);
   if (!verifyUser(fromId)) {
