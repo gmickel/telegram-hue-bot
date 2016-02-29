@@ -8,6 +8,7 @@ import config from './lib/config';
 import logger from './lib/logger';
 import Hue from './lib/hue';
 import validCommands from './lib/validCommands';
+import state from './lib/state';
 
 import _ from 'lodash';
 
