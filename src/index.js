@@ -3,6 +3,7 @@
 
 import TelegramBot from 'node-telegram-bot-api';
 import fs from 'fs';
+import NodeCache from 'node-cache';
 import acl from './lib/acl';
 import config from './lib/config';
 import logger from './lib/logger';
@@ -14,6 +15,7 @@ import _ from 'lodash';
 
 const bot = new TelegramBot(config.telegram.botToken, { polling: true });
 const hueApi = new Hue(config);
+const cache = new NodeCache({ stdTTL: 120, checkperiod: 150 });
 
 /*
  * default message sender with markdown
