@@ -251,7 +251,7 @@ bot.on('message', (msg) => {
         })
       };
       bot.sendMessage(chatId,
-        'Hue bot started\n\nEnter /hue for keyboard control or /help for a list of commands', opts);
+        'Quick commands\n\n', opts);
     });
     return;
   }
