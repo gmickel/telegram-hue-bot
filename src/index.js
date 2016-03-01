@@ -133,9 +133,11 @@ function sendCommands(fromId, chatId) {
   const response = [`Hi ${getTelegramName(fromId)}!`];
   response.push('Below is a list of commands:');
   response.push('\n*General commands:*');
-  response.push('/start to start this bot (also displays the keyboard)');
   response.push('/help displays this list of commands');
-  response.push('\n*List commands:*');
+  response.push('/quick to display the quick command keyboard');
+  response.push('\n*GUI commands:*');
+  response.push('/hue to start controlling your lights using the telegram keyboard');
+  response.push('\n*Text commands:*');
   response.push('`/ls|list [lights, groups, scenes]` List a resource');
   response.push('`/l|light [id]` Show a light\'s state and attributes');
   response.push('`/g|group [id]` Show a group\'s state and attributes');
@@ -299,14 +301,13 @@ bot.on('message', (msg) => {
       }
     }
 
-    hueApi.groups(groupId, command)
+    return hueApi.groups(groupId, command)
       .then((groups) => {
         sendMessage(chatId, groups);
       })
       .catch((error) => {
         replyWithError(fromId, chatId, new Error(error));
       });
-    return;
   }
 
   /**
@@ -319,11 +320,10 @@ bot.on('message', (msg) => {
     const [groupId, command, value] = match[1].split(' ');
 
     if (!command) {
-      hueApi.group(groupId)
+      return hueApi.group(groupId)
         .then((group) => {
           sendMessage(chatId, group);
         });
-      return;
     }
 
     if (command) {
@@ -332,7 +332,7 @@ bot.on('message', (msg) => {
       }
     }
 
-    hueApi.groups(groupId, command, value)
+    return hueApi.groups(groupId, command, value)
       .then((groups) => {
         sendMessage(chatId, groups);
       })
@@ -351,11 +351,10 @@ bot.on('message', (msg) => {
     const [lightId, command, value] = match[1].split(' ');
 
     if (!command) {
-      hueApi.light(lightId)
+      return hueApi.light(lightId)
         .then((light) => {
           sendMessage(chatId, light);
         });
-      return;
     }
 
     if (command) {
@@ -364,7 +363,7 @@ bot.on('message', (msg) => {
       }
     }
 
-    hueApi.lights(lightId, command, value)
+    return hueApi.lights(lightId, command, value)
       .then((lights) => {
         sendMessage(chatId, lights);
       })
