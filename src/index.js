@@ -333,8 +333,8 @@ bot.on('message', (msg) => {
     }
 
     hueApi.groups(groupId, command, value)
-      .then((message) => {
-        sendMessage(chatId, message);
+      .then((groups) => {
+        sendMessage(chatId, groups);
       })
       .catch((error) => {
         replyWithError(fromId, chatId, new Error(error));
@@ -365,8 +365,8 @@ bot.on('message', (msg) => {
     }
 
     hueApi.lights(lightId, command, value)
-      .then((message) => {
-        sendMessage(chatId, message);
+      .then((lights) => {
+        sendMessage(chatId, lights);
       })
       .catch((error) => {
         replyWithError(fromId, chatId, new Error(error));
