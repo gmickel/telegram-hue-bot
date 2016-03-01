@@ -233,7 +233,7 @@ bot.on('message', (msg) => {
   /**
    * matches quick command
    */
-  if (/^\/quick$/g.test(message)) {
+  if (/^\/(?:[qQ]|[qQ]uick)/g.test(message)) {
     logger.info(`user: ${fromId}, message: sent \'/quick\' command`);
 
     hueApi.getGroups().then((groupIds) => {
@@ -259,7 +259,7 @@ bot.on('message', (msg) => {
   /*
    * handle help command
    */
-  if (/^\/help$/g.test(message)) {
+  if (/^\/(?:[hH]|[hH]elp)$/g.test(message)) {
     logger.info(`user: ${fromId}, message: sent \'/help\' command`);
     return sendCommands(fromId, chatId);
   }
@@ -268,7 +268,7 @@ bot.on('message', (msg) => {
    * matches the list command
    * valid resources are lights, groups and scenes
    */
-  if ((match = /^\/(?:ls|list)? (.+)$/g.exec(message)) !== null) {
+  if ((match = /^\/(?:[lL]s|[lL]ist)? (.+)$/g.exec(message)) !== null) {
     logger.info(`user: ${fromId}, sent ${match[0]}`);
 
     if (validCommands.list.indexOf(match[1]) === -1) {
@@ -287,7 +287,7 @@ bot.on('message', (msg) => {
    * matches the all command
    * used to easily manipulate group 0 (all lights)
    */
-  if ((match = /^\/a(?:ll)? (.+)$/g.exec(message)) !== null) {
+  if ((match = /^\/[aA](?:ll)? (.+)$/g.exec(message)) !== null) {
     logger.info(`user: ${fromId}, sent ${match[0]}`);
 
     const groupId = 0;
@@ -313,7 +313,7 @@ bot.on('message', (msg) => {
    * matches the group command
    * used to manipulate groups
    */
-  if ((match = /^\/g(?:roup)? (.+)$/g.exec(message)) !== null) {
+  if ((match = /^\/[gG](?:roup)? (.+)$/g.exec(message)) !== null) {
     logger.info(`user: ${fromId}, sent ${match[0]}`);
 
     const [groupId, command, value] = match[1].split(' ');
@@ -346,7 +346,7 @@ bot.on('message', (msg) => {
    * used to get the attributes of a light
    */
 
-  if ((match = /^\/l(?:ight)? (.+)$/g.exec(message)) !== null) {
+  if ((match = /^\/[lL](?:ight)? (.+)$/g.exec(message)) !== null) {
     logger.info(`user: ${fromId}, sent ${match[0]}`);
     const [lightId, command, value] = match[1].split(' ');
 
