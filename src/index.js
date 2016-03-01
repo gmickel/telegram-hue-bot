@@ -151,7 +151,7 @@ function sendCommands(fromId, chatId) {
   response.push('`bri <0-255>` Set the brightness of a group or light.');
   response.push('`sat <0-255>` Set the saturation of a group or light.');
   response.push('`hue <0-65535>` Set the hue of a group or light.');
-  response.push('`xy <0-255>` Set the hue x and y coordinates of a color in CIE color space of a group or light.');
+  response.push('`xy <0-255>` Set the hue x and y coordinates of a color in CIE color space of a group or light.'); // eslint-disable-line max-len
   response.push('`rgb <255,255,255>` Set the colour using RGB of a group or light.');
 
   return bot.sendMessage(chatId, response.join('\n'), { parse_mode: 'Markdown', selective: 2 });
@@ -238,7 +238,7 @@ bot.on('message', (msg) => {
   if (/^\/(?:[qQ]|[qQ]uick)/g.test(message)) {
     logger.info(`user: ${fromId}, message: sent \'/quick\' command`);
 
-    hueApi.getGroups().then((groupIds) => {
+    return hueApi.getGroups().then((groupIds) => {
       const markup = [['/all on', '/all off']];
 
       _.forEach(groupIds, (groupId) => {
@@ -255,7 +255,6 @@ bot.on('message', (msg) => {
       bot.sendMessage(chatId,
         'Quick commands\n\n', opts);
     });
-    return;
   }
 
   /*
@@ -278,11 +277,10 @@ bot.on('message', (msg) => {
       return replyWithError(fromId, error);
     }
 
-    hueApi.list(match)
+    return hueApi.list(match)
       .then((lights) => {
         sendMessage(chatId, lights);
       });
-    return;
   }
 
   /**
@@ -391,5 +389,7 @@ bot.on('message', (msg) => {
     return keyboardControls.sendList(message);
   }
 
-  // next maybe return a message with the selected thing etc
+  return true;
+
+  // TODO: end of keyboard selection, clear cache etc (return it)
 });
