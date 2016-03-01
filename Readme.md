@@ -61,22 +61,27 @@ npm run start
 
 ### First use
 Authorize your telegram user with the bot by sending the `/auth` command with the password you created in `config.json`
-Sending `/start` to the bot will display a pre-populated keyboard with some quick on/off commands for your Hue groups.
-Sending `/help` to the bot will also display a brief overview of the commands and their usage.
+Sending `/quick` to the bot will display a pre-populated keyboard with some quick on/off commands for your Hue groups.
+Sending `/help` to the bot will display a brief overview of the commands and their usage.
 
-### Listing lights, groups or scenes
+### Controlling your hue using the telegram keyboard
+Sending `/hue` to the bot will display a telegram keyboard that allows you to manipulate your lights and groups using the displayed buttons.
+
+### Controlling your hue using text commands
+
+#### Listing lights, groups or scenes
 
 Send the bot a message with the resource name
 
 `/ls lights|groups|scenes` or `/list lights|groups|scenes`
 
-### Display a light or group's attributes
+#### Display a light or group's attributes
 
 `/l <lightId>` or `/light <lightId>`
 
 `/g <groupId>` or `/group <groupId>`
 
-### Light / Group manipulation
+#### Light / Group manipulation
 
 `/l|light [id] [command] <value>`
 
