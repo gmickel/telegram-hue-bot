@@ -9,6 +9,7 @@ import config from './lib/config';
 import logger from './lib/logger';
 import Hue from './lib/hue';
 import validCommands from './lib/validCommands';
+import KeyboardControls from './lib/keyboardControls';
 import state from './lib/state';
 
 import _ from 'lodash';
@@ -209,15 +210,44 @@ bot.onText(/\/auth (.+)/, (msg, match) => {
   }
 
   message.push('You have been authorized.');
-  message.push('Type /start to begin.');
+  message.push('Type /help, /quick or /hue');
 
   return sendMessage(fromId, message.join('\n'));
+});
+
+bot.on('message', (msg) => {
+  const user = msg.from;
+  const fromId = msg.from.id;
+  const message = msg.text;
+
+  const keyboardControls = new KeyboardControls(bot, user, config, cache);
+
+  if (/^\/(?:h|H)ue?/g.test(message)) {
+    if (!verifyUser(fromId)) {
+      return;
+    }
+
+    keyboardControls.sendResources();
+    return;
+  }
+
+  const currentState = cache.get(`state${user.id}`);
+  logger.info(currentState);
+
+  if (currentState === state.RESOURCE) {
+    logger.info(message);
+    keyboardControls.sendList(message);
+    return;
+  }
+
+  // next maybe return a message with the selected thing etc
+
 });
 
 /**
  * matches start command
  */
-bot.onText(/\/start/, (msg) => {
+bot.onText(/\/quick/, (msg) => {
   const fromId = msg.from.id;
   if (!verifyUser(fromId)) {
     return;

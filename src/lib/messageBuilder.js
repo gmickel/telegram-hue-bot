@@ -11,6 +11,14 @@ class MessageBuilder {
     }).join('\n');
   }
 
+  // TODO: save the ID here for future use
+  lightsKeyboard(lightsObj) {
+    return _.map(lightsObj, (light, id) => {
+      return [`${id} - ${light.name} | on: ${light.state.on ? 'yes' : 'no'}`];
+    });
+  }
+
+
   light(lightObj) {
     return `*${lightObj.name}*
         *on*: ${lightObj.state.on ? 'yes' : 'no'} | *xy*: ${lightObj.state.xy.join(',')}
@@ -29,6 +37,12 @@ class MessageBuilder {
     }).join('\n');
   }
 
+  groupsKeyboard(groupsObj) {
+    return _.map(groupsObj, (group, id) => {
+      return [`${id} - ${group.name} - lights: ${group.lights.join(',')}`];
+    });
+  }
+
   getGroupIds(groupsObj) {
     return _.map(groupsObj, (group, id) => {
       return id;
@@ -40,6 +54,13 @@ class MessageBuilder {
       return `*${scene.name}* - id: ${id}
       lights: ${scene.lights.join(',')}`;
     }).join('\n');
+  }
+
+  // TODO: this isn't really useful, maybe crop
+  scenesKeyboard(scenesObj) {
+    return _.map(scenesObj, (scene, id) => {
+      return [`${id} - ${scene.name} - lights: ${scene.lights.join(',')}`];
+    });
   }
 
 }

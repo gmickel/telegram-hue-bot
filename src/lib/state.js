@@ -1,4 +1,5 @@
-export default state = {
+export default {
+  RESOURCE: 'resource',
   LIGHT: 'light',
   GROUP: 'group',
   SCENE: 'scene',
