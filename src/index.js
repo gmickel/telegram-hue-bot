@@ -7,7 +7,7 @@ import NodeCache from 'node-cache';
 import acl from './lib/acl';
 import config from './lib/config';
 import logger from './lib/logger';
-import Hue from './lib/hue';
+import Hue from './lib/hueCommands';
 import validCommands from './lib/validCommands';
 import KeyboardControls from './lib/keyboardControls';
 import state from './lib/state';
@@ -15,8 +15,8 @@ import state from './lib/state';
 import _ from 'lodash';
 
 const bot = new TelegramBot(config.telegram.botToken, { polling: true });
-const hueApi = new Hue(config);
-const cache = new NodeCache({ stdTTL: 120, checkperiod: 150 });
+const hueCommands = new Hue(config);
+const cache = new NodeCache({ stdTTL: 0, checkperiod: 150 });
 
 /*
  * default message sender with markdown
@@ -146,7 +146,7 @@ function sendCommands(fromId, chatId) {
   response.push('`/g|group [id] [command] <value>`');
   response.push('*The following commands are supported for light / group manipulation :*');
   response.push('`on | off` Turn a light or a group on or off');
-  response.push('`preset <red>` Apply a preset from the config file to a light or group.');
+  response.push('`preset <red|energize|...>` Apply a preset from the config file to a light or group.'); // eslint-disable-line max-len
   response.push('`scene <sceneId>` Apply a scene to a group, use group 0 for the group defined in the scene or use another group to apply the scene to the defined group *and* the specified group.'); // eslint-disable-line max-len
   response.push('`bri <0-255>` Set the brightness of a group or light.');
   response.push('`sat <0-255>` Set the saturation of a group or light.');
@@ -238,7 +238,7 @@ bot.on('message', (msg) => {
   if (/^\/(?:[qQ]|[qQ]uick)/g.test(message)) {
     logger.info(`user: ${fromId}, message: sent \'/quick\' command`);
 
-    return hueApi.getGroups().then((groupIds) => {
+    return hueCommands.getGroups().then((groupIds) => {
       const markup = [
         [
           '/all on',
@@ -285,7 +285,7 @@ bot.on('message', (msg) => {
       return replyWithError(fromId, error);
     }
 
-    return hueApi.list(match)
+    return hueCommands.list(match)
       .then((lights) => {
         sendMessage(chatId, lights);
       });
@@ -307,7 +307,7 @@ bot.on('message', (msg) => {
       }
     }
 
-    return hueApi.groups(groupId, command)
+    return hueCommands.groups(groupId, command)
       .then((groups) => {
         sendMessage(chatId, groups);
       })
@@ -326,7 +326,7 @@ bot.on('message', (msg) => {
     const [groupId, command, value] = match[1].split(' ');
 
     if (!command) {
-      return hueApi.group(groupId)
+      return hueCommands.group(groupId)
         .then((group) => {
           sendMessage(chatId, group);
         });
@@ -338,7 +338,7 @@ bot.on('message', (msg) => {
       }
     }
 
-    return hueApi.groups(groupId, command, value)
+    return hueCommands.groups(groupId, command, value)
       .then((groups) => {
         sendMessage(chatId, groups);
       })
@@ -357,7 +357,7 @@ bot.on('message', (msg) => {
     const [lightId, command, value] = match[1].split(' ');
 
     if (!command) {
-      return hueApi.light(lightId)
+      return hueCommands.light(lightId)
         .then((light) => {
           sendMessage(chatId, light);
         });
@@ -369,7 +369,7 @@ bot.on('message', (msg) => {
       }
     }
 
-    return hueApi.lights(lightId, command, value)
+    return hueCommands.lights(lightId, command, value)
       .then((lights) => {
         sendMessage(chatId, lights);
       })
@@ -381,7 +381,7 @@ bot.on('message', (msg) => {
   /**
    * Start keyboard controls, send the resources keyboard to the user
    */
-  const keyboardControls = new KeyboardControls(bot, user, chatId, config, cache, hueApi);
+  const keyboardControls = new KeyboardControls(bot, user, chatId, config, cache, hueCommands);
 
   if (/^\/(?:(?:h|H)ue?|(?:s|S)tart)/g.test(message)) {
     if (!verifyUser(fromId)) {
@@ -422,17 +422,19 @@ bot.on('message', (msg) => {
       case state.LIGHT: {
         if (message === 'on' || message === 'off') {
           return keyboardControls.setLightState(resourceId, message);
+        } else {
+          return keyboardControls.sendValues(message);
         }
 
-        break;
       }
 
       case state.GROUP: {
         if (message === 'on' || message === 'off') {
           return keyboardControls.setGroupState(resourceId, message);
+        } else {
+          return keyboardControls.sendValues(message);
         }
 
-        break;
       }
 
       default: {

@@ -127,7 +127,7 @@ class Hue {
       }
 
       case 'preset': {
-        const preset = this.config.hue.presets.colors[value];
+        const preset = this.config.hue.presets[value];
         if (!preset) {
           return Promise.reject(`Invalid preset (${value})`);
         }
@@ -228,7 +228,7 @@ class Hue {
       }
 
       case 'preset': {
-        const preset = this.config.hue.presets.colors[value];
+        const preset = this.config.hue.presets[value];
         if (!preset) {
           return Promise.reject(`Invalid preset (${value})`);
         }

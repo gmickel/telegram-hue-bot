@@ -10,27 +10,60 @@
     "host": "",
     "user": "",
     "presets": {
-      "colors": {
-        "red": {
-          "hue": 65535,
-          "sat": 255,
-          "bri": 255
-        },
-        "green": {
-          "hue": 25500,
-          "sat": 255,
-          "bri": 255
-        },
-        "blue": {
-          "hue": 46920,
-          "sat": 255,
-          "bri": 255
-        },
-        "yellow": {
-          "hue": 12000,
-          "sat": 255,
-          "bri": 255
-        }
+      "bright": {
+        "hue": 65535,
+        "sat": 0,
+        "bri": 255
+      },
+      "relax": {
+        "hue": 13123,
+        "sat": 212,
+        "bri": 144
+      },
+      "concentrate": {
+        "hue": 33848,
+        "sat": 44,
+        "bri": 219
+      },
+      "energize": {
+        "hue": 34497,
+        "sat": 232,
+        "bri": 203
+      },
+      "reading": {
+        "hue": 34497,
+        "sat": 232,
+        "bri": 240
+      },
+      "red": {
+        "hue": 65535,
+        "sat": 255,
+        "bri": 255
+      },
+      "green": {
+        "hue": 25500,
+        "sat": 255,
+        "bri": 255
+      },
+      "blue": {
+        "hue": 46920,
+        "sat": 255,
+        "bri": 255
+      },
+      "purple": {
+        "hue": 49322,
+        "sat": 255,
+        "bri": 255
+      },
+      "yellow": {
+        "hue": 12000,
+        "sat": 255,
+        "bri": 255
+      },
+      "orange": {
+        "hue": 6188,
+        "sat": 255,
+        "bri": 255
       }
     }
   }
