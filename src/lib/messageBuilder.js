@@ -1,6 +1,8 @@
 'use strict';
 
 import _ from 'lodash';
+import validCommands from './validCommands';
+import { arrayToChunks } from './utils';
 
 class MessageBuilder {
   lights(lightsObj) {
@@ -38,9 +40,11 @@ class MessageBuilder {
   }
 
   groupsKeyboard(groupsObj) {
-    return _.map(groupsObj, (group, id) => {
+    const groups = [['0 - All lights']];
+    const realGroups = _.map(groupsObj, (group, id) => {
       return [`${id} - ${group.name} - lights: ${group.lights.join(',')}`];
     });
+    return groups.concat(realGroups);
   }
 
   getGroupIds(groupsObj) {
@@ -63,6 +67,27 @@ class MessageBuilder {
     });
   }
 
+  lightCommandsKeyboard() {
+    const keyboard = [];
+    const commands = arrayToChunks(validCommands.light, 2);
+    commands.forEach((row) => {
+      let rowElement = row.map((item) => item);
+      keyboard.push(rowElement);
+    });
+
+    return keyboard;
+  }
+
+  groupCommandsKeyboard() {
+    const keyboard = [];
+    const commands = arrayToChunks(validCommands.group, 2);
+    commands.forEach((row) => {
+      let rowElement = row.map((item) => item);
+      keyboard.push(rowElement);
+    });
+
+    return keyboard;
+  }
 }
 
 export default new MessageBuilder();

@@ -162,7 +162,7 @@ function handleAuthorization(fromId, chatId, user, password) {
 
   if (isAuthorized(fromId)) {
     message.push('Already authorized.');
-    message.push('Type /start to begin.');
+    message.push('Type /hue, /start, /quick or /help to begin.');
     return sendMessage(chatId, message.join('\n'));
   }
 
@@ -189,7 +189,7 @@ function handleAuthorization(fromId, chatId, user, password) {
   }
 
   message.push('You have been authorized.');
-  message.push('Type /help, /quick or /hue');
+  message.push('Type /hue, /start, /quick or /help');
 
   return sendMessage(chatId, message.join('\n'));
 }
@@ -239,10 +239,18 @@ bot.on('message', (msg) => {
     logger.info(`user: ${fromId}, message: sent \'/quick\' command`);
 
     return hueApi.getGroups().then((groupIds) => {
-      const markup = [['/all on', '/all off']];
+      const markup = [
+        [
+          '/all on',
+          '/all off'
+        ]
+      ];
 
       _.forEach(groupIds, (groupId) => {
-        markup.push([`/g ${groupId} on`, `/g ${groupId} off`]);
+        markup.push([
+          `/g ${groupId} on`,
+          `/g ${groupId} off`
+        ]);
       });
 
       const opts = {
@@ -370,26 +378,81 @@ bot.on('message', (msg) => {
       });
   }
 
-  const keyboardControls = new KeyboardControls(bot, user, config, cache);
+  /**
+   * Start keyboard controls, send the resources keyboard to the user
+   */
+  const keyboardControls = new KeyboardControls(bot, user, chatId, config, cache, hueApi);
 
-  // Start keyboard controls, send the resources keyboard to the user
-  if (/^\/(?:h|H)ue?/g.test(message)) {
+  if (/^\/(?:(?:h|H)ue?|(?:s|S)tart)/g.test(message)) {
     if (!verifyUser(fromId)) {
       return sendUnauthorizedMsg(fromId, chatId);
     }
 
+    logger.info(`Keyboard controls: ${fromId} started the keyboard controls`);
     return keyboardControls.sendResources();
   }
 
   const currentState = cache.get(`state${user.id}`);
-  logger.info(currentState);
+  logger.info(`Keyboard controls: current state: ${currentState}`);
 
   if (currentState === state.RESOURCE) {
-    logger.info(message);
+    logger.info(`Keyboard controls: Sending ${message} list to ${fromId}`);
     return keyboardControls.sendList(message);
   }
 
+  if (currentState === state.LIGHT || currentState === state.GROUP) {
+    const resourceId = message.split(' ')[0];
+    logger.info(`Keyboard controls: ${fromId} requested the ${currentState} commands for ${resourceId}`);
+    if (currentState === state.LIGHT) {
+      return keyboardControls.sendLightCommands(resourceId);
+    }
+
+    if (currentState === state.GROUP) {
+      return keyboardControls.sendGroupCommands(resourceId);
+    }
+
+  }
+
+  // combine this with value?
+  if (currentState === state.COMMAND) {
+    const resourceId = cache.get(`resourceId${user.id}`);
+    const resource = cache.get(`resource${user.id}`);
+    logger.info(`Keyboard controls: ${fromId} send ${message} to ${resource} ${resourceId}`);
+    switch (resource) {
+      case state.LIGHT: {
+        if (message === 'on' || message === 'off') {
+          return keyboardControls.setLightState(resourceId, message);
+        }
+
+        break;
+      }
+
+      case state.GROUP: {
+        if (message === 'on' || message === 'off') {
+          return keyboardControls.setGroupState(resourceId, message);
+        }
+
+        break;
+      }
+
+      default: {
+        logger.error(`Resource ${resource} not found`);
+        replyWithError(fromId, chatId, new Error(`Resource ${resource} not found`));
+      }
+    }
+  }
+
   return true;
+});
 
   // TODO: end of keyboard selection, clear cache etc (return it)
-});
+  /*     if (command) {
+  ADD THIS TO VALUE CHECK
+  if (validCommands.light.indexOf(command) === -1) {
+    return replyWithError(fromId, chatId, new Error('Resource doesn\'t exist'));
+  }
+   }
+   });
+
+   */
+
