@@ -35,7 +35,8 @@ function replyWithError(userId, chatId, err) {
   return bot.sendMessage(chatId, `*Error:* ${err.message}`, {
     parse_mode: 'Markdown',
     reply_markup: {
-      hide_keyboard: true
+      hide_keyboard: true,
+      selective: true
     }
   });
 }
@@ -154,7 +155,7 @@ function sendCommands(fromId, chatId) {
   response.push('`xy <0-255>` Set the hue x and y coordinates of a color in CIE color space of a group or light.'); // eslint-disable-line max-len
   response.push('`rgb <255,255,255>` Set the colour using RGB of a group or light.');
 
-  return bot.sendMessage(chatId, response.join('\n'), { parse_mode: 'Markdown', selective: 2 });
+  return bot.sendMessage(chatId, response.join('\n'), { parse_mode: 'Markdown', selective: true });
 }
 
 function handleAuthorization(fromId, chatId, user, password) {
@@ -257,7 +258,8 @@ bot.on('message', (msg) => {
         reply_to_message_id: msg.message_id,
         reply_markup: JSON.stringify({
           keyboard: markup,
-          resize_keyboard: true
+          resize_keyboard: true,
+          selective: true
         })
       };
       bot.sendMessage(chatId,

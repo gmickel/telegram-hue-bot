@@ -165,15 +165,20 @@ class KeyboardControls {
       options = {
         parse_mode: 'Markdown',
         reply_markup: {
-          hide_keyboard: true
+          hide_keyboard: true,
+          selective: true
         }
       };
     } else {
       options = {
         disable_web_page_preview: true,
         parse_mode: 'Markdown',
-        selective: 2,
-        reply_markup: JSON.stringify({ keyboard: keyboard, one_time_keyboard: true })
+        reply_markup: JSON.stringify({
+          keyboard: keyboard,
+          one_time_keyboard: true,
+          resize_keyboard: true,
+          selective: true
+        })
       };
     }
 
