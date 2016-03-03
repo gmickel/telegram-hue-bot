@@ -21,19 +21,23 @@ const cache = new NodeCache({ stdTTL: 0, checkperiod: 150 });
 /*
  * default message sender with markdown
  */
-function sendMessage(userId, message) {
+function sendMessage(userId, message, origMsgId) {
   return bot.sendMessage(userId, message, {
-    parse_mode: 'Markdown'
+    parse_mode: 'Markdown',
+    disable_notification: true,
+    reply_to_message_id: origMsgId
   });
 }
 
 /*
  * handle removing the custom keyboard
  */
-function replyWithError(userId, chatId, err) {
+function replyWithError(userId, chatId, origMsgId, err) {
   logger.warn('user: %s message: %s', userId, err.message);
   return bot.sendMessage(chatId, `*Error:* ${err.message}`, {
     parse_mode: 'Markdown',
+    reply_to_message_id: origMsgId,
+    disable_notification: true,
     reply_markup: {
       hide_keyboard: true,
       selective: true
@@ -155,10 +159,10 @@ function sendCommands(fromId, chatId) {
   response.push('`xy <0-255>` Set the hue x and y coordinates of a color in CIE color space of a group or light.'); // eslint-disable-line max-len
   response.push('`rgb <255,255,255>` Set the colour using RGB of a group or light.');
 
-  return bot.sendMessage(chatId, response.join('\n'), { parse_mode: 'Markdown', selective: true });
+  return bot.sendMessage(chatId, response.join('\n'), { parse_mode: 'Markdown', disable_notification: true });
 }
 
-function handleAuthorization(fromId, chatId, user, password) {
+function handleAuthorization(fromId, chatId, origMsgId, user, password) {
   const message = [];
 
   if (isAuthorized(fromId)) {
@@ -177,7 +181,7 @@ function handleAuthorization(fromId, chatId, user, password) {
 
   if (password !== config.bot.password) {
     logger.warn(`The user: ${fromId} entered an invalid password.`);
-    return replyWithError(fromId, chatId, new Error('Invalid password.'));
+    return replyWithError(fromId, chatId, origMsgId, new Error('Invalid password.'));
   }
 
   acl.allowedUsers.push(user);
@@ -195,10 +199,11 @@ function handleAuthorization(fromId, chatId, user, password) {
   return sendMessage(chatId, message.join('\n'));
 }
 
-function sendUnauthorizedMsg(userId, chatId) {
+function sendUnauthorizedMsg(userId, chatId, origMsgId) {
   replyWithError(
     userId,
     chatId,
+    origMsgId,
     new Error('You are not authorized to use this bot.\n`/auth [password]` to authorize.'));
 }
 
@@ -218,6 +223,7 @@ bot.on('message', (msg) => {
   const fromId = msg.from.id;
   const message = msg.text;
   const chatId = msg.chat.id;
+  const msgId = msg.message_id;
   let match = null;
 
   /*
@@ -225,12 +231,12 @@ bot.on('message', (msg) => {
    */
   if ((match = /^\/auth (.+)$/g.exec(message)) !== null) {
     const password = match[1];
-    return handleAuthorization(fromId, chatId, user, password);
+    return handleAuthorization(fromId, chatId, msgId, user, password);
   }
 
   // Reject all unauthorized commands except for /auth
   if (!verifyUser(fromId)) {
-    return sendUnauthorizedMsg(fromId, chatId);
+    return sendUnauthorizedMsg(fromId, chatId, msgId);
   }
 
   /**
@@ -256,6 +262,7 @@ bot.on('message', (msg) => {
 
       const opts = {
         reply_to_message_id: msg.message_id,
+        disable_notification: true,
         reply_markup: JSON.stringify({
           keyboard: markup,
           resize_keyboard: true,
@@ -284,12 +291,12 @@ bot.on('message', (msg) => {
 
     if (validCommands.list.indexOf(match[1]) === -1) {
       const error = new Error('Resource doesn\'t exist');
-      return replyWithError(fromId, error);
+      return replyWithError(fromId, chatId, msgId, error);
     }
 
     return hueCommands.list(match)
       .then((lights) => {
-        sendMessage(chatId, lights);
+        sendMessage(chatId, lights, msgId);
       });
   }
 
@@ -305,16 +312,16 @@ bot.on('message', (msg) => {
 
     if (command) {
       if (validCommands.group.indexOf(command) === -1) {
-        return replyWithError(fromId, chatId, new Error('Resource doesn\'t exist'));
+        return replyWithError(fromId, chatId, msgId, new Error('Resource doesn\'t exist'));
       }
     }
 
     return hueCommands.groups(groupId, command)
       .then((groups) => {
-        sendMessage(chatId, groups);
+        sendMessage(chatId, groups, msgId);
       })
       .catch((error) => {
-        replyWithError(fromId, chatId, new Error(error));
+        replyWithError(fromId, chatId, msgId, new Error(error));
       });
   }
 
@@ -330,7 +337,7 @@ bot.on('message', (msg) => {
     if (!command) {
       return hueCommands.group(groupId)
         .then((group) => {
-          sendMessage(chatId, group);
+          sendMessage(chatId, group, msgId);
         });
     }
 
@@ -342,10 +349,10 @@ bot.on('message', (msg) => {
 
     return hueCommands.groups(groupId, command, value)
       .then((groups) => {
-        sendMessage(chatId, groups);
+        sendMessage(chatId, groups, msgId);
       })
       .catch((error) => {
-        replyWithError(fromId, chatId, new Error(error));
+        replyWithError(fromId, chatId, msgId, new Error(error));
       });
   }
 
@@ -361,29 +368,29 @@ bot.on('message', (msg) => {
     if (!command) {
       return hueCommands.light(lightId)
         .then((light) => {
-          sendMessage(chatId, light);
+          sendMessage(chatId, light, msgId);
         });
     }
 
     if (command) {
       if (validCommands.light.indexOf(command) === -1) {
-        return replyWithError(fromId, chatId, new Error('Resource doesn\'t exist'));
+        return replyWithError(fromId, chatId, msgId, new Error('Resource doesn\'t exist'));
       }
     }
 
     return hueCommands.lights(lightId, command, value)
       .then((lights) => {
-        sendMessage(chatId, lights);
+        sendMessage(chatId, lights, msgId);
       })
       .catch((error) => {
-        replyWithError(fromId, chatId, new Error(error));
+        replyWithError(fromId, chatId, msgId, new Error(error));
       });
   }
 
   /**
    * Start keyboard controls, send the resources keyboard to the user
    */
-  const keyboardControls = new KeyboardControls(bot, user, chatId, config, cache, hueCommands);
+  const keyboardControls = new KeyboardControls(bot, user, chatId, msgId, config, cache, hueCommands);
 
   if (/^\/(?:(?:h|H)ue?|(?:s|S)tart)/g.test(message)) {
     if (!verifyUser(fromId)) {
@@ -441,7 +448,7 @@ bot.on('message', (msg) => {
 
       default: {
         logger.error(`Resource ${resource} not found`);
-        replyWithError(fromId, chatId, new Error(`Resource ${resource} not found`));
+        replyWithError(fromId, chatId, msgId, new Error(`Resource ${resource} not found`));
       }
     }
   }

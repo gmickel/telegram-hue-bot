@@ -8,7 +8,7 @@ import validCommands from './validCommands';
 import _ from 'lodash';
 
 class KeyboardControls {
-  constructor(bot, user, chatId, config, cache, hueCommands) {
+  constructor(bot, user, chatId, origMsgId, config, cache, hueCommands) {
     this.config = config;
     this.hueCommands = hueCommands;
     this.hueApi = new hugh.HueApi(config.hue.host, config.hue.user);
@@ -16,6 +16,7 @@ class KeyboardControls {
     this.user = user;
     this.cache = cache;
     this.chatId = chatId;
+    this.origMsgId = origMsgId;
     this.username = this.user.username || (this.user.first_name + (' ' + this.user.last_name || ''));
   }
 
@@ -87,6 +88,7 @@ class KeyboardControls {
       }
 
       default: {
+        this.clearCache();
         throw new Error(`State: ${state} message: ${resource} - Shouldn't end up here`);
       }
     }
@@ -164,6 +166,8 @@ class KeyboardControls {
       message = message.message;
       options = {
         parse_mode: 'Markdown',
+        reply_to_message_id: this.origMsgId,
+        disable_notification: true,
         reply_markup: {
           hide_keyboard: true,
           selective: true
@@ -173,6 +177,9 @@ class KeyboardControls {
       options = {
         disable_web_page_preview: true,
         parse_mode: 'Markdown',
+        reply_to_message_id: this.origMsgId,
+        selective: true,
+        disable_notification: true,
         reply_markup: JSON.stringify({
           keyboard: keyboard,
           one_time_keyboard: true,
