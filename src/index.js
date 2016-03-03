@@ -10,6 +10,7 @@ import logger from './lib/logger';
 import Hue from './lib/hueCommands';
 import validCommands from './lib/validCommands';
 import KeyboardControls from './lib/keyboardControls';
+import MessageSender from './lib/messageSender';
 import state from './lib/state';
 
 import _ from 'lodash';
@@ -17,33 +18,6 @@ import _ from 'lodash';
 const bot = new TelegramBot(config.telegram.botToken, { polling: true });
 const hueCommands = new Hue(config);
 const cache = new NodeCache({ stdTTL: 0, checkperiod: 150 });
-
-/*
- * default message sender with markdown
- */
-function sendMessage(userId, message, origMsgId) {
-  return bot.sendMessage(userId, message, {
-    parse_mode: 'Markdown',
-    disable_notification: true,
-    reply_to_message_id: origMsgId
-  });
-}
-
-/*
- * handle removing the custom keyboard
- */
-function replyWithError(userId, chatId, origMsgId, err) {
-  logger.warn('user: %s message: %s', userId, err.message);
-  return bot.sendMessage(chatId, `*Error:* ${err.message}`, {
-    parse_mode: 'Markdown',
-    reply_to_message_id: origMsgId,
-    disable_notification: true,
-    reply_markup: {
-      hide_keyboard: true,
-      selective: true
-    }
-  });
-}
 
 /*
  * check to see is user is authenticated
@@ -66,17 +40,6 @@ function isRevoked(userId) {
  */
 function verifyUser(userId) {
   return _.some(acl.allowedUsers, { id: userId }) === true;
-}
-
-/*
- * prompt for admin message
- */
-function promptOwnerConfig(userId, chatId) {
-  const message = [`Your User ID is: ${userId}`];
-  message.push('Please add your User ID to the config file in the field labeled \'owner\'.');
-  message.push('This will allow you to use the admin commands.');
-  message.push('Please restart the bot once you have updated the config file.');
-  return bot.sendMessage(chatId, message.join('\n'));
 }
 
 /*
@@ -134,8 +97,8 @@ function getTelegramName(user) {
 /*
  * Send Help Commands To chat
  */
-function sendCommands(fromId, chatId) {
-  const response = [`Hi ${getTelegramName(fromId)}!`];
+function sendCommands(messageSender) {
+  const response = [`Hi ${getTelegramName(messageSender.fromId)}!`];
   response.push('Below is a list of commands:');
   response.push('\n*General commands:*');
   response.push('/help displays this list of commands');
@@ -159,16 +122,16 @@ function sendCommands(fromId, chatId) {
   response.push('`xy <0-255>` Set the hue x and y coordinates of a color in CIE color space of a group or light.'); // eslint-disable-line max-len
   response.push('`rgb <255,255,255>` Set the colour using RGB of a group or light.');
 
-  return bot.sendMessage(chatId, response.join('\n'), { parse_mode: 'Markdown', disable_notification: true });
+  return messageSender.send(response.join('\n'));
 }
 
-function handleAuthorization(fromId, chatId, origMsgId, user, password) {
+function handleAuthorization(user, password, messageSender) {
   const message = [];
-
+  const fromId = messageSender.fromId;
   if (isAuthorized(fromId)) {
     message.push('Already authorized.');
     message.push('Type /hue, /start, /quick or /help to begin.');
-    return sendMessage(chatId, message.join('\n'));
+    return messageSender.send(message.join('\n'));
   }
 
   // make sure the user is not banned
@@ -176,12 +139,12 @@ function handleAuthorization(fromId, chatId, origMsgId, user, password) {
     message.push('Your access has been revoked, you cannot reauthorize.');
     message.push('Please reach out to the bot owner for support.');
     logger.warn(`The revoked user: ${fromId} tried to reauthorize`);
-    return sendMessage(chatId, message.join('\n'));
+    return messageSender.send(message.join('\n'));
   }
 
   if (password !== config.bot.password) {
     logger.warn(`The user: ${fromId} entered an invalid password.`);
-    return replyWithError(fromId, chatId, origMsgId, new Error('Invalid password.'));
+    return messageSender.send(new Error('Invalid password.'));
   }
 
   acl.allowedUsers.push(user);
@@ -189,22 +152,24 @@ function handleAuthorization(fromId, chatId, origMsgId, user, password) {
 
   if (acl.allowedUsers.length === 1) {
     if (!config.bot.owner) {
-      promptOwnerConfig(fromId, chatId);
+      const ownerPromptMsg = [`Your User ID is: ${fromId}`];
+      ownerPromptMsg.push('Please add your User ID to the config file in the field labeled \'owner\'.');
+      ownerPromptMsg.push('This will allow you to use the admin commands.');
+      ownerPromptMsg.push('Please restart the bot once you have updated the config file.');
+      return messageSender.send(ownerPromptMsg.join('\n'));
     }
   }
 
   message.push('You have been authorized.');
   message.push('Type /hue, /start, /quick or /help');
 
-  return sendMessage(chatId, message.join('\n'));
+  return messageSender.send(message.join('\n'));
 }
 
-function sendUnauthorizedMsg(userId, chatId, origMsgId) {
-  replyWithError(
-    userId,
-    chatId,
-    origMsgId,
-    new Error('You are not authorized to use this bot.\n`/auth [password]` to authorize.'));
+function sendUnauthorizedMsg(messageSender) {
+  messageSender.send(
+    new Error('You are not authorized to use this bot.\n`/auth [password]` to authorize.')
+  );
 }
 
 /*
@@ -226,17 +191,19 @@ bot.on('message', (msg) => {
   const msgId = msg.message_id;
   let match = null;
 
+  const messageSender = new MessageSender(bot, user, fromId, chatId, msgId);
+
   /*
    * handle authorization
    */
   if ((match = /^\/auth (.+)$/g.exec(message)) !== null) {
     const password = match[1];
-    return handleAuthorization(fromId, chatId, msgId, user, password);
+    return handleAuthorization(user, password, messageSender);
   }
 
   // Reject all unauthorized commands except for /auth
   if (!verifyUser(fromId)) {
-    return sendUnauthorizedMsg(fromId, chatId, msgId);
+    return sendUnauthorizedMsg(messageSender);
   }
 
   /**
@@ -260,17 +227,7 @@ bot.on('message', (msg) => {
         ]);
       });
 
-      const opts = {
-        reply_to_message_id: msg.message_id,
-        disable_notification: true,
-        reply_markup: JSON.stringify({
-          keyboard: markup,
-          resize_keyboard: true,
-          selective: true
-        })
-      };
-      bot.sendMessage(chatId,
-        'Quick commands\n\n', opts);
+      messageSender.send('Quick commands\n\n', markup);
     });
   }
 
@@ -279,7 +236,7 @@ bot.on('message', (msg) => {
    */
   if (/^\/(?:[hH]|[hH]elp)$/g.test(message)) {
     logger.info(`user: ${fromId}, message: sent \'/help\' command`);
-    return sendCommands(fromId, chatId);
+    return sendCommands(messageSender);
   }
 
   /**
@@ -290,13 +247,12 @@ bot.on('message', (msg) => {
     logger.info(`user: ${fromId}, sent ${match[0]}`);
 
     if (validCommands.list.indexOf(match[1]) === -1) {
-      const error = new Error('Resource doesn\'t exist');
-      return replyWithError(fromId, chatId, msgId, error);
+      return messageSender.send(new Error(`Resource \`${match[1]}\` doesn't exist`));
     }
 
     return hueCommands.list(match)
       .then((lights) => {
-        sendMessage(chatId, lights, msgId);
+        messageSender.send(lights);
       });
   }
 
@@ -312,16 +268,16 @@ bot.on('message', (msg) => {
 
     if (command) {
       if (validCommands.group.indexOf(command) === -1) {
-        return replyWithError(fromId, chatId, msgId, new Error('Resource doesn\'t exist'));
+        return messageSender.send(new Error(`Command \`${command}\` doesn't exist`));
       }
     }
 
     return hueCommands.groups(groupId, command)
       .then((groups) => {
-        sendMessage(chatId, groups, msgId);
+        messageSender.send(groups);
       })
       .catch((error) => {
-        replyWithError(fromId, chatId, msgId, new Error(error));
+        messageSender.send(new Error(error));
       });
   }
 
@@ -337,22 +293,22 @@ bot.on('message', (msg) => {
     if (!command) {
       return hueCommands.group(groupId)
         .then((group) => {
-          sendMessage(chatId, group, msgId);
+          messageSender.send(group);
         });
     }
 
     if (command) {
       if (validCommands.group.indexOf(command) === -1) {
-        return replyWithError(fromId, chatId, new Error('Resource doesn\'t exist'));
+        messageSender.send(new Error(`Command \`${command}\` doesn't exist`));
       }
     }
 
     return hueCommands.groups(groupId, command, value)
       .then((groups) => {
-        sendMessage(chatId, groups, msgId);
+        messageSender.send(groups);
       })
       .catch((error) => {
-        replyWithError(fromId, chatId, msgId, new Error(error));
+        messageSender.send(new Error(error));
       });
   }
 
@@ -368,33 +324,33 @@ bot.on('message', (msg) => {
     if (!command) {
       return hueCommands.light(lightId)
         .then((light) => {
-          sendMessage(chatId, light, msgId);
+          messageSender.send(light);
         });
     }
 
     if (command) {
       if (validCommands.light.indexOf(command) === -1) {
-        return replyWithError(fromId, chatId, msgId, new Error('Resource doesn\'t exist'));
+        return messageSender.send(new Error(`Command \`${command}\` doesn't exist`));
       }
     }
 
     return hueCommands.lights(lightId, command, value)
       .then((lights) => {
-        sendMessage(chatId, lights, msgId);
+        messageSender.send(lights);
       })
       .catch((error) => {
-        replyWithError(fromId, chatId, msgId, new Error(error));
+        messageSender(new Error(error));
       });
   }
 
   /**
    * Start keyboard controls, send the resources keyboard to the user
    */
-  const keyboardControls = new KeyboardControls(bot, user, chatId, msgId, config, cache, hueCommands);
+  const keyboardControls = new KeyboardControls(bot, user, chatId, msgId, config, cache, hueCommands, messageSender);
 
   if (/^\/(?:(?:h|H)ue?|(?:s|S)tart)/g.test(message)) {
     if (!verifyUser(fromId)) {
-      return sendUnauthorizedMsg(fromId, chatId);
+      return sendUnauthorizedMsg(messageSender);
     }
 
     logger.info(`Keyboard controls: ${fromId} started the keyboard controls`);
@@ -434,7 +390,6 @@ bot.on('message', (msg) => {
         } else {
           return keyboardControls.sendValues(message);
         }
-
       }
 
       case state.GROUP: {
@@ -443,12 +398,11 @@ bot.on('message', (msg) => {
         } else {
           return keyboardControls.sendValues(message);
         }
-
       }
 
       default: {
         logger.error(`Resource ${resource} not found`);
-        replyWithError(fromId, chatId, msgId, new Error(`Resource ${resource} not found`));
+        return messageSender.send(new Error(`Resource \`${resource}\` not found`));
       }
     }
   }

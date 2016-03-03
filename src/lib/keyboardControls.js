@@ -2,13 +2,14 @@
 
 import hugh from 'hugh';
 import MessageBuilder from './messageBuilder';
+import MessageSender from './messageSender';
 import state from './state';
 import logger from './logger';
 import validCommands from './validCommands';
 import _ from 'lodash';
 
 class KeyboardControls {
-  constructor(bot, user, chatId, origMsgId, config, cache, hueCommands) {
+  constructor(bot, user, chatId, origMsgId, config, cache, hueCommands, messageSender) {
     this.config = config;
     this.hueCommands = hueCommands;
     this.hueApi = new hugh.HueApi(config.hue.host, config.hue.user);
@@ -18,6 +19,7 @@ class KeyboardControls {
     this.chatId = chatId;
     this.origMsgId = origMsgId;
     this.username = this.user.username || (this.user.first_name + (' ' + this.user.last_name || ''));
+    this.sender = messageSender;
   }
 
   clearCache() {
@@ -37,7 +39,7 @@ class KeyboardControls {
     const keyboard = [];
     keyboard.push(validCommands.list);
     this.cache.set(`state${this.user.id}`, state.RESOURCE);
-    return this.sendMessage('Please choose a light, group or scene', keyboard);
+    return this.sender.send('Please choose a light, group or scene', keyboard);
   };
 
   // TODO: ERROR HANDLING
@@ -49,12 +51,12 @@ class KeyboardControls {
             const keyboard = MessageBuilder.lightsKeyboard(results);
             this.cache.set(`state${this.user.id}`, state.LIGHT);
             this.cache.set(`resource${this.user.id}`, state.LIGHT);
-            return this.sendMessage('Please choose a light', keyboard);
+            return this.sender.send('Please choose a light', keyboard);
           })
           .catch((error) => {
             this.clearCache();
             logger.error(error);
-            return this.sendMessage('Something went wrong!');
+            return this.sender.send(new Error('Something went wrong!'));
           });
       }
 
@@ -64,12 +66,12 @@ class KeyboardControls {
             const keyboard = MessageBuilder.groupsKeyboard(results);
             this.cache.set(`state${this.user.id}`, state.GROUP);
             this.cache.set(`resource${this.user.id}`, state.GROUP);
-            return this.sendMessage('Please choose a group', keyboard);
+            return this.sender.send('Please choose a group', keyboard);
           })
           .catch((error) => {
             this.clearCache();
             logger.error(error);
-            return this.sendMessage('Something went wrong!');
+            return this.sender.send(new Error('Something went wrong!'));
           });
       }
 
@@ -78,12 +80,12 @@ class KeyboardControls {
           .then((results) => {
             const keyboard = MessageBuilder.scenesKeyboard(results);
             this.cache.set(`state${this.user.id}`, state.SCENE);
-            return this.sendMessage('Please choose a scene', keyboard);
+            return this.sender.send('Please choose a scene', keyboard);
           })
           .catch((error) => {
             this.clearCache();
             logger.error(error);
-            return this.sendMessage('Something went wrong!');
+            return this.sender.send(new Error('Something went wrong!'));
           });
       }
 
@@ -102,12 +104,12 @@ class KeyboardControls {
         const keyboard = MessageBuilder.lightCommandsKeyboard();
         this.cache.set(`state${this.user.id}`, state.COMMAND);
         this.cache.set(`resourceId${this.user.id}`, lightId);
-        return this.sendMessage(textMessage, keyboard);
+        return this.sender.send(textMessage, keyboard);
       })
       .catch((error) => {
         this.clearCache();
         logger.error(error);
-        return this.sendMessage('Something went wrong!');
+        return this.sender.send(new Error('Something went wrong!'));
       });
   }
 
@@ -119,12 +121,12 @@ class KeyboardControls {
         const keyboard = MessageBuilder.groupCommandsKeyboard();
         this.cache.set(`state${this.user.id}`, state.COMMAND);
         this.cache.set(`resourceId${this.user.id}`, groupId);
-        return this.sendMessage(textMessage, keyboard);
+        return this.sender.send(textMessage, keyboard);
       })
       .catch((error) => {
         this.clearCache();
         logger.error(error);
-        return this.sendMessage('Something went wrong!');
+        return this.sender.send(new Error('Something went wrong!'));
       });
   }
 
@@ -132,13 +134,13 @@ class KeyboardControls {
     this.hueCommands.lights(resourceId, command)
       .then((msg) => {
         this.clearCache();
-        this.sendMessage(msg);
+        this.sender.send(msg);
         return this.sendResources();
       })
       .catch((error) => {
         this.clearCache();
         logger.error(error);
-        return this.sendMessage('Something went wrong!');
+        return this.sender.send(new Error('Something went wrong!'));
       })
   }
 
@@ -146,17 +148,17 @@ class KeyboardControls {
     this.hueCommands.groups(resourceId, command)
       .then((msg) => {
         this.clearCache();
-        this.sendMessage(msg);
+        this.sender.send(msg);
         return this.sendResources();
       })
       .catch((error) => {
         this.clearCache();
         logger.error(error);
-        return this.sendMessage('Something went wrong!');
+        return this.sender.send(new Error('Something went wrong!'));
       })
   }
 
-  sendMessage(message, keyboard) {
+  send(message, keyboard) {
     keyboard = keyboard || null;
 
     var options;
@@ -189,7 +191,7 @@ class KeyboardControls {
       };
     }
 
-    return this.bot.sendMessage(this.chatId, message, options);
+    return this.bot.send(this.chatId, message, options);
   }
 
 }
