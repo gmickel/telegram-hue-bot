@@ -383,16 +383,26 @@ bot.on('message', (msg) => {
     logger.info(`Keyboard controls: ${fromId} send ${message} to ${resource} ${resourceId}`);
     switch (resource) {
       case state.LIGHT: {
-        if (message === 'on' || message === 'off') {
-          return keyboardControls.setLightState(resourceId, message);
+        const command = validCommands.keyboardCommands.light[message];
+        if (_.values(validCommands.keyboardCommands.light).indexOf(command) === -1) {
+          return messageSender.send(new Error(`Invalid command \`${message}\``));
+        }
+
+        if (command === 'on' || command === 'off') {
+          return keyboardControls.setLightState(resourceId, command);
         } else {
           return keyboardControls.sendValues(message);
         }
       }
 
       case state.GROUP: {
-        if (message === 'on' || message === 'off') {
-          return keyboardControls.setGroupState(resourceId, message);
+        const command = validCommands.keyboardCommands.group[message];
+        if (_.values(validCommands.keyboardCommands.group).indexOf(command) === -1) {
+          return messageSender.send(new Error(`Invalid command \`${message}\``));
+        }
+
+        if (command === 'on' || command === 'off') {
+          return keyboardControls.setGroupState(resourceId, command);
         } else {
           return keyboardControls.sendValues(message);
         }

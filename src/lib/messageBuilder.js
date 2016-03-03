@@ -69,7 +69,7 @@ class MessageBuilder {
 
   lightCommandsKeyboard() {
     const keyboard = [];
-    const commands = arrayToChunks(validCommands.light, 2);
+    const commands = arrayToChunks(Object.keys(validCommands.keyboardCommands.light), 2);
     commands.forEach((row) => {
       let rowElement = row.map((item) => item);
       keyboard.push(rowElement);
@@ -80,12 +80,24 @@ class MessageBuilder {
 
   groupCommandsKeyboard() {
     const keyboard = [];
-    const commands = arrayToChunks(validCommands.group, 2);
+    const commands = arrayToChunks(Object.keys(validCommands.keyboardCommands.group), 2);
     commands.forEach((row) => {
       let rowElement = row.map((item) => item);
       keyboard.push(rowElement);
     });
 
+    return keyboard;
+  }
+
+  lightValuesKeyboard(command, config) {
+    const keyboard = [];
+    keyboard.push(Object.keys(config.hue.values[command]).map(key => key + '%'));
+    return keyboard;
+  }
+
+  groupValuesKeyboard(command, config) {
+    const keyboard = [];
+    keyboard.push(Object.keys(config.hue.values[command]).map(key => key + '%'));
     return keyboard;
   }
 }

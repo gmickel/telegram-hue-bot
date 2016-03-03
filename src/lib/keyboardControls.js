@@ -42,7 +42,6 @@ class KeyboardControls {
     return this.sender.send('Please choose a light, group or scene', keyboard);
   };
 
-  // TODO: ERROR HANDLING
   sendList(resource) {
     switch (resource) {
       case 'lights': {
@@ -91,7 +90,9 @@ class KeyboardControls {
 
       default: {
         this.clearCache();
-        throw new Error(`State: ${state} message: ${resource} - Shouldn't end up here`);
+        this.sendResources();
+        logger.warn(`State: ${state} message: ${resource} - Invalid resource`);
+        return this.sender.send(new Error(`Invalid resource \`${resource}\``));
       }
     }
   }
@@ -108,6 +109,7 @@ class KeyboardControls {
       })
       .catch((error) => {
         this.clearCache();
+        this.sendResources();
         logger.error(error);
         return this.sender.send(new Error('Something went wrong!'));
       });
@@ -125,9 +127,30 @@ class KeyboardControls {
       })
       .catch((error) => {
         this.clearCache();
+        this.sendResources();
         logger.error(error);
         return this.sender.send(new Error('Something went wrong!'));
       });
+  }
+
+  sendValues(command) {
+    const resource = this.cache.get(`resource${this.user.id}`);
+    const hueCommand = validCommands.keyboardCommands[resource][command];
+    this.cache.set(`state${this.user.id}`, state.VALUE);
+    const textMessage = `Please choose a \`${command}\` value`;
+    //TODO send write config object based on command
+    // get scenes
+    //     "values": {
+    // "bri": {
+    // change to just bri
+
+      let keyboard;
+    if (resource === state.LIGHT) {
+      keyboard = MessageBuilder.lightValuesKeyboard(hueCommand, this.config);
+    } else {
+      keyboard = MessageBuilder.groupValuesKeyboard(hueCommand, this.config);
+    }
+    return this.sender.send(textMessage, keyboard);
   }
 
   setLightState(resourceId, command) {
@@ -139,6 +162,7 @@ class KeyboardControls {
       })
       .catch((error) => {
         this.clearCache();
+        this.sendResources();
         logger.error(error);
         return this.sender.send(new Error('Something went wrong!'));
       })
@@ -153,6 +177,7 @@ class KeyboardControls {
       })
       .catch((error) => {
         this.clearCache();
+        this.sendResources();
         logger.error(error);
         return this.sender.send(new Error('Something went wrong!'));
       })
