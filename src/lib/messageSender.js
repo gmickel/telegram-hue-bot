@@ -13,6 +13,12 @@ class MessageSender {
     this.username = this.user.username || (this.user.first_name + (' ' + this.user.last_name || ''));
   }
 
+  /**
+   * Send a message with an optional keyboard
+   * @param message
+   * @param keyboard
+   * @returns {Promise}
+   */
   send(message, keyboard) {
     let options;
     if (message instanceof Error) {

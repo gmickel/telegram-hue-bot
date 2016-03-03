@@ -375,10 +375,8 @@ bot.on('message', (msg) => {
     if (currentState === state.GROUP) {
       return keyboardControls.sendGroupCommands(resourceId);
     }
-
   }
 
-  // combine this with value?
   if (currentState === state.COMMAND) {
     const resourceId = cache.get(`resourceId${user.id}`);
     const resource = cache.get(`resource${user.id}`);

@@ -157,43 +157,6 @@ class KeyboardControls {
         return this.sender.send(new Error('Something went wrong!'));
       })
   }
-
-  send(message, keyboard) {
-    keyboard = keyboard || null;
-
-    var options;
-    if (message instanceof Error) {
-      logger.warn('user: %s message: %s', this.username, message.message);
-
-      message = message.message;
-      options = {
-        parse_mode: 'Markdown',
-        reply_to_message_id: this.origMsgId,
-        disable_notification: true,
-        reply_markup: {
-          hide_keyboard: true,
-          selective: true
-        }
-      };
-    } else {
-      options = {
-        disable_web_page_preview: true,
-        parse_mode: 'Markdown',
-        reply_to_message_id: this.origMsgId,
-        selective: true,
-        disable_notification: true,
-        reply_markup: JSON.stringify({
-          keyboard: keyboard,
-          one_time_keyboard: true,
-          resize_keyboard: true,
-          selective: true
-        })
-      };
-    }
-
-    return this.bot.send(this.chatId, message, options);
-  }
-
 }
 
 export default KeyboardControls;
