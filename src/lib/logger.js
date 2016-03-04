@@ -7,7 +7,8 @@ const logger = new(Winston.Logger)({
       timestamp: true,
       prettyPrint: true,
       colorize: true,
-      handleExceptions: true
+      handleExceptions: true,
+      level: 'info'
     }),
     new(Winston.transports.File)({
       filename: __dirname + '/../../hue-bot.log',

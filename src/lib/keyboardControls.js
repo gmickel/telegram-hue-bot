@@ -2,7 +2,6 @@
 
 import hugh from 'hugh';
 import MessageBuilder from './messageBuilder';
-import MessageSender from './messageSender';
 import state from './state';
 import logger from './logger';
 import validCommands from './validCommands';
@@ -23,7 +22,7 @@ class KeyboardControls {
   }
 
   clearCache() {
-    logger.info(`user: ${this.username}, message: clearing keyboard controls cache`);
+    logger.debug(`user: ${this.username}, message: clearing keyboard controls cache`);
 
     var cacheItems = [
       'resource', 'light', 'group',
@@ -137,24 +136,21 @@ class KeyboardControls {
     const resource = this.cache.get(`resource${this.user.id}`);
     const hueCommand = validCommands.keyboardCommands[resource][command];
     this.cache.set(`state${this.user.id}`, state.VALUE);
+    this.cache.set(`command${this.user.id}`, hueCommand);
     const textMessage = `Please choose a \`${command}\` value`;
+
     //TODO send write config object based on command
     // get scenes
     //     "values": {
     // "bri": {
     // change to just bri
 
-      let keyboard;
-    if (resource === state.LIGHT) {
-      keyboard = MessageBuilder.lightValuesKeyboard(hueCommand, this.config);
-    } else {
-      keyboard = MessageBuilder.groupValuesKeyboard(hueCommand, this.config);
-    }
+    const keyboard = MessageBuilder.valuesKeyboard(hueCommand, this.config);
     return this.sender.send(textMessage, keyboard);
   }
 
-  setLightState(resourceId, command) {
-    this.hueCommands.lights(resourceId, command)
+  setLightState(resourceId, command, value) {
+    this.hueCommands.lights(resourceId, command, value)
       .then((msg) => {
         this.clearCache();
         this.sender.send(msg);
@@ -168,8 +164,8 @@ class KeyboardControls {
       })
   }
 
-  setGroupState(resourceId, command) {
-    this.hueCommands.groups(resourceId, command)
+  setGroupState(resourceId, command, value) {
+    this.hueCommands.groups(resourceId, command, value)
       .then((msg) => {
         this.clearCache();
         this.sender.send(msg);

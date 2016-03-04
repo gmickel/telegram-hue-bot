@@ -2,7 +2,6 @@
 
 import hugh from 'hugh';
 import MessageBuilder from './messageBuilder';
-import logger from './logger';
 
 class Hue {
   constructor(config) {

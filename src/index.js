@@ -210,7 +210,7 @@ bot.on('message', (msg) => {
    * matches quick command
    */
   if (/^\/(?:[qQ]|[qQ]uick)/g.test(message)) {
-    logger.info(`user: ${fromId}, message: sent \'/quick\' command`);
+    logger.debug(`user: ${fromId}, message: sent \'/quick\' command`);
 
     return hueCommands.getGroups().then((groupIds) => {
       const markup = [
@@ -235,7 +235,7 @@ bot.on('message', (msg) => {
    * handle help command
    */
   if (/^\/(?:[hH]|[hH]elp)$/g.test(message)) {
-    logger.info(`user: ${fromId}, message: sent \'/help\' command`);
+    logger.debug(`user: ${fromId}, message: sent \'/help\' command`);
     return sendCommands(messageSender);
   }
 
@@ -244,7 +244,7 @@ bot.on('message', (msg) => {
    * valid resources are lights, groups and scenes
    */
   if ((match = /^\/(?:[lL]s|[lL]ist)? (.+)$/g.exec(message)) !== null) {
-    logger.info(`user: ${fromId}, sent ${match[0]}`);
+    logger.debug(`user: ${fromId}, sent ${match[0]}`);
 
     if (validCommands.list.indexOf(match[1]) === -1) {
       return messageSender.send(new Error(`Resource \`${match[1]}\` doesn't exist`));
@@ -261,7 +261,7 @@ bot.on('message', (msg) => {
    * used to easily manipulate group 0 (all lights)
    */
   if ((match = /^\/[aA](?:ll)? (.+)$/g.exec(message)) !== null) {
-    logger.info(`user: ${fromId}, sent ${match[0]}`);
+    logger.debug(`user: ${fromId}, sent ${match[0]}`);
 
     const groupId = 0;
     const command = match[1];
@@ -286,7 +286,7 @@ bot.on('message', (msg) => {
    * used to manipulate groups
    */
   if ((match = /^\/[gG](?:roup)? (.+)$/g.exec(message)) !== null) {
-    logger.info(`user: ${fromId}, sent ${match[0]}`);
+    logger.debug(`user: ${fromId}, sent ${match[0]}`);
 
     const [groupId, command, value] = match[1].split(' ');
 
@@ -318,7 +318,7 @@ bot.on('message', (msg) => {
    */
 
   if ((match = /^\/[lL](?:ight)? (.+)$/g.exec(message)) !== null) {
-    logger.info(`user: ${fromId}, sent ${match[0]}`);
+    logger.debug(`user: ${fromId}, sent ${match[0]}`);
     const [lightId, command, value] = match[1].split(' ');
 
     if (!command) {
@@ -346,28 +346,29 @@ bot.on('message', (msg) => {
   /**
    * Start keyboard controls, send the resources keyboard to the user
    */
-  const keyboardControls = new KeyboardControls(bot, user, chatId, msgId, config, cache, hueCommands, messageSender);
+  const keyboardControls =
+    new KeyboardControls(bot, user, chatId, msgId, config, cache, hueCommands, messageSender);
 
   if (/^\/(?:(?:h|H)ue?|(?:s|S)tart)/g.test(message)) {
     if (!verifyUser(fromId)) {
       return sendUnauthorizedMsg(messageSender);
     }
 
-    logger.info(`Keyboard controls: ${fromId} started the keyboard controls`);
+    logger.debug(`Keyboard controls: ${fromId} started the keyboard controls`);
     return keyboardControls.sendResources();
   }
 
   const currentState = cache.get(`state${user.id}`);
-  logger.info(`Keyboard controls: current state: ${currentState}`);
+  logger.debug(`Keyboard controls: current state: ${currentState}`);
 
   if (currentState === state.RESOURCE) {
-    logger.info(`Keyboard controls: Sending ${message} list to ${fromId}`);
+    logger.debug(`Keyboard controls: Sending ${message} list to ${fromId}`);
     return keyboardControls.sendList(message);
   }
 
   if (currentState === state.LIGHT || currentState === state.GROUP) {
     const resourceId = message.split(' ')[0];
-    logger.info(`Keyboard controls: ${fromId} requested the ${currentState} commands for ${resourceId}`);
+    logger.debug(`Keyboard controls: ${fromId} requested the ${currentState} commands for ${resourceId}`);
     if (currentState === state.LIGHT) {
       return keyboardControls.sendLightCommands(resourceId);
     }
@@ -380,7 +381,7 @@ bot.on('message', (msg) => {
   if (currentState === state.COMMAND) {
     const resourceId = cache.get(`resourceId${user.id}`);
     const resource = cache.get(`resource${user.id}`);
-    logger.info(`Keyboard controls: ${fromId} send ${message} to ${resource} ${resourceId}`);
+    logger.debug(`Keyboard controls: ${fromId} send ${message} to ${resource} ${resourceId}`);
     switch (resource) {
       case state.LIGHT: {
         const command = validCommands.keyboardCommands.light[message];
@@ -415,17 +416,39 @@ bot.on('message', (msg) => {
     }
   }
 
-  return true;
-});
+  if (currentState === state.VALUE) {
+    const resourceId = cache.get(`resourceId${user.id}`);
+    const resource = cache.get(`resource${user.id}`);
+    const command = cache.get(`command${user.id}`);
+    logger.debug(`Keyboard controls: ${fromId} send ${command} ${message} to ${resource} ${resourceId}`);
 
-  // TODO: end of keyboard selection, clear cache etc (return it)
-  /*     if (command) {
-  ADD THIS TO VALUE CHECK
-  if (validCommands.light.indexOf(command) === -1) {
-    return replyWithError(fromId, chatId, new Error('Resource doesn\'t exist'));
+    let value = message;
+
+    if (command.match(/(preset|scene)/) === null) {
+      if (message.endsWith('%')) {
+        const key = message.substring(0, message.length - 1);
+        value = config.hue.values[command][key];
+      } else {
+        value = parseInt(message, 10);
+      }
+    }
+
+    switch (resource) {
+      case state.LIGHT: {
+        return keyboardControls.setLightState(resourceId, command, value);
+      }
+
+      case state.GROUP: {
+        return keyboardControls.setGroupState(resourceId, command, value);
+      }
+
+      default: {
+        logger.error(`Resource ${resource} not found`);
+        return messageSender.send(new Error(`Resource \`${resource}\` not found`));
+      }
+    }
   }
-   }
-   });
 
-   */
-
+  keyboardControls.clearCache();
+  return keyboardControls.sendResources();
+});

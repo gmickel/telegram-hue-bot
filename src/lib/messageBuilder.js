@@ -89,9 +89,18 @@ class MessageBuilder {
     return keyboard;
   }
 
-  lightValuesKeyboard(command, config) {
+  valuesKeyboard(command, config) {
     const keyboard = [];
-    keyboard.push(Object.keys(config.hue.values[command]).map(key => key + '%'));
+    if (command === 'preset') {
+      const presets = arrayToChunks(Object.keys(config.hue.presets), 2);
+      presets.forEach((row) => {
+        let rowElement = row.map((item) => item);
+        keyboard.push(rowElement);
+      });
+    } else {
+      keyboard.push(Object.keys(config.hue.values[command]).map(key => key + '%'));
+    }
+
     return keyboard;
   }
 
