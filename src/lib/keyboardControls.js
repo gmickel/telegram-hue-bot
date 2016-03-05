@@ -137,7 +137,7 @@ class KeyboardControls {
     const hueCommand = validCommands.keyboardCommands[resource][command];
     this.cache.set(`state${this.user.id}`, state.VALUE);
     this.cache.set(`command${this.user.id}`, hueCommand);
-    const textMessage = `Please choose a \`${command}\` value`;
+    const textMessage = `Please choose a \`${command}\` value or enter a value by hand`;
 
     //TODO send write config object based on command
     // get scenes
