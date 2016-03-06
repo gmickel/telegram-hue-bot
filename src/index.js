@@ -252,8 +252,8 @@ bot.on('message', (msg) => {
       new KeyboardControls(bot, user, chatId, msgId, config, cache, hueCommands, messageSender);
     keyboardControls.clearCache();
     logger.debug(`user: ${fromId}, \'/clear\' command successfully executed`);
-    keyboardControls.sendResources();
     return messageSender.send('Successfully cleared all previous commands');
+    keyboardControls.sendResources();
   }
 
   /**
@@ -311,6 +311,9 @@ bot.on('message', (msg) => {
       return hueCommands.group(groupId)
         .then((group) => {
           messageSender.send(group);
+        })
+        .catch((error) => {
+          messageSender.send(new Error(error));
         });
     }
 
@@ -342,6 +345,9 @@ bot.on('message', (msg) => {
       return hueCommands.light(lightId)
         .then((light) => {
           messageSender.send(light);
+        })
+        .catch((error) => {
+          messageSender.send(new Error(error));
         });
     }
 
@@ -356,7 +362,7 @@ bot.on('message', (msg) => {
         messageSender.send(lights);
       })
       .catch((error) => {
-        messageSender(new Error(error));
+        messageSender.send(new Error(error));
       });
   }
 
@@ -466,6 +472,9 @@ bot.on('message', (msg) => {
         value = config.hue.values[command][key];
       } else {
         value = parseInt(message, 10);
+        if (_.isNaN(value)) {
+          return messageSender.send(`Invalid \`${command}\` value *${message}*`);
+        }
       }
     }
 

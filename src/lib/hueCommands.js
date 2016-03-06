@@ -1,5 +1,6 @@
 'use strict';
 
+import _ from 'lodash';
 import hugh from 'hugh';
 import MessageBuilder from './messageBuilder';
 
@@ -59,6 +60,10 @@ class Hue {
   }
 
   light(lightId) {
+    if (_.isNaN(parseInt(lightId))) {
+      return Promise.reject(`Invalid light ID *${lightId}*`);
+    }
+
     return this.hueApi.lightStatusWithRGB(lightId)
       .then((results) => {
         return MessageBuilder.light(results);
@@ -70,6 +75,7 @@ class Hue {
 
   lights(lightId, command, value) {
     const state = new hugh.LightState();
+
     switch (command) {
       case 'on': {
         state.on();
@@ -94,6 +100,10 @@ class Hue {
       }
 
       case 'bri': {
+        if (_.isNaN(parseInt(value))) {
+          return Promise.reject(`Invalid \`${command}\` value *${value}*`);
+        }
+
         state.bri(parseInt(value));
         return this.hueApi.setLightState(lightId, state)
           .then(() => {
@@ -105,6 +115,10 @@ class Hue {
       }
 
       case 'hue': {
+        if (_.isNaN(parseInt(value))) {
+          return Promise.reject(`Invalid \`${command}\` value *${value}*`);
+        }
+
         state.hue(parseInt(value));
         return this.hueApi.setLightState(lightId, state)
           .then(() => {
@@ -116,7 +130,33 @@ class Hue {
       }
 
       case 'sat': {
+        if (_.isNaN(parseInt(value))) {
+          return Promise.reject(`Invalid \`${command}\` value *${value}*`);
+        }
+
         state.sat(parseInt(value));
+        return this.hueApi.setLightState(lightId, state)
+          .then(() => {
+            return 'Command successful';
+          })
+          .catch((error) => {
+            return error.message;
+          });
+      }
+
+      case 'rgb': {
+        let [r, g, b] = value.split(',');
+        if (!(r && g && b)) {
+          return Promise.reject(`Invalid RGB value ${value}, please use the following format /light 1 rgb \`100,100,100\``);
+        }
+
+        [r, g, b] = [r, g, b].map(item => parseInt(item, 10));
+
+        if ((_.isNaN(r) || _.isNaN(g) || _.isNaN(b))) {
+          return Promise.reject(`Invalid RGB value ${value}, please use the following format /light 1 rgb \`100,100,100\``);
+        }
+
+        state.rgb([r, g, b]);
         return this.hueApi.setLightState(lightId, state)
           .then(() => {
             return 'Command successful';
@@ -149,6 +189,10 @@ class Hue {
   }
 
   group(groupId) {
+    if (_.isNaN(parseInt(groupId))) {
+      return Promise.reject(`Invalid group ID *${groupId}*`);
+    }
+
     return this.hueApi.groupStatus(groupId)
       .then((results) => {
         return MessageBuilder.group(results);
@@ -184,6 +228,10 @@ class Hue {
       }
 
       case 'bri': {
+        if (_.isNaN(parseInt(value))) {
+          return Promise.reject(`Invalid \`${command}\` value *${value}*`);
+        }
+
         state.bri(parseInt(value));
         return this.hueApi.setGroupState(groupId, state)
           .then(() => {
@@ -195,6 +243,10 @@ class Hue {
       }
 
       case 'hue': {
+        if (_.isNaN(parseInt(value))) {
+          return Promise.reject(`Invalid \`${command}\` value *${value}*`);
+        }
+
         state.hue(parseInt(value));
         return this.hueApi.setGroupState(groupId, state)
           .then(() => {
@@ -206,6 +258,10 @@ class Hue {
       }
 
       case 'sat': {
+        if (_.isNaN(parseInt(value))) {
+          return Promise.reject(`Invalid \`${command}\` value *${value}*`);
+        }
+
         state.sat(parseInt(value));
         return this.hueApi.setGroupState(groupId, state)
           .then(() => {
@@ -225,6 +281,10 @@ class Hue {
           .catch((error) => {
             return error.message;
           });
+      }
+
+      case 'rgb': {
+        return Promise.reject('Setting RGB values for groups is not yet implemented.');
       }
 
       case 'preset': {
