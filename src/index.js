@@ -154,7 +154,9 @@ function handleAuthorization(user, password, messageSender) {
   if (acl.allowedUsers.length === 1) {
     if (!config.bot.owner) {
       const ownerPromptMsg = [`Your User ID is: ${fromId}`];
-      ownerPromptMsg.push('Please add your User ID to the config file in the field labeled \'owner\'.');
+      ownerPromptMsg.push(
+        'Please add your User ID to the config file in the field labeled \'owner\'.'
+      );
       ownerPromptMsg.push('This will allow you to use the admin commands.');
       ownerPromptMsg.push('Please restart the bot once you have updated the config file.');
       return messageSender.send(ownerPromptMsg.join('\n'));
@@ -400,9 +402,9 @@ bot.on('message', (msg) => {
 
         if (command === 'on' || command === 'off') {
           return keyboardControls.setLightState(resourceId, command);
-        } else {
-          return keyboardControls.sendValues(message);
         }
+
+        return keyboardControls.sendValues(message);
       }
 
       case state.GROUP: {
@@ -413,9 +415,9 @@ bot.on('message', (msg) => {
 
         if (command === 'on' || command === 'off') {
           return keyboardControls.setGroupState(resourceId, command);
-        } else {
-          return keyboardControls.sendValues(message);
         }
+
+        return keyboardControls.sendValues(message);
       }
 
       case state.SCENE: {
@@ -439,7 +441,8 @@ bot.on('message', (msg) => {
     const resourceId = cache.get(`resourceId${user.id}`);
     const resource = cache.get(`resource${user.id}`);
     const command = cache.get(`command${user.id}`);
-    logger.debug(`Keyboard controls: ${fromId} send ${command} ${message} to ${resource} ${resourceId}`);
+    logger.debug(
+      `Keyboard controls: ${fromId} send ${command} ${message} to ${resource} ${resourceId}`);
 
     let value = message;
 
