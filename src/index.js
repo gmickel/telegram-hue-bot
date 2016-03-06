@@ -252,8 +252,8 @@ bot.on('message', (msg) => {
       new KeyboardControls(bot, user, chatId, msgId, config, cache, hueCommands, messageSender);
     keyboardControls.clearCache();
     logger.debug(`user: ${fromId}, \'/clear\' command successfully executed`);
-    return messageSender.send('Successfully cleared all previous commands');
-    keyboardControls.sendResources();
+    messageSender.send('Successfully cleared all previous commands');
+    return keyboardControls.sendResources();
   }
 
   /**
