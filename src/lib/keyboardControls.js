@@ -98,7 +98,7 @@ class KeyboardControls {
   }
 
   sendLightCommands(lightId) {
-    return this.hueApi.lightStatus(lightId)
+    return this.hueApi.lightStatusWithRGB(lightId)
       .then((results) => {
         const lightStatus = MessageBuilder.light(results);
         const textMessage = `${lightStatus}\n\nPlease choose a command`;

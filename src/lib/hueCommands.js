@@ -59,7 +59,7 @@ class Hue {
   }
 
   light(lightId) {
-    return this.hueApi.lightStatus(lightId)
+    return this.hueApi.lightStatusWithRGB(lightId)
       .then((results) => {
         return MessageBuilder.light(results);
       })

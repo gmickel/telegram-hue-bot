@@ -21,8 +21,8 @@ class MessageBuilder {
   }
 
   light(lightObj) {
-    return `*${lightObj.name}*
-        *on*: ${lightObj.state.on ? 'yes' : 'no'} | *xy*: ${lightObj.state.xy.join(',')}
+    return `*${lightObj.name}* | *on*: ${lightObj.state.on ? 'yes' : 'no'}
+         *xy*: ${lightObj.state.xy.join(', ')} | *rgb*: ${lightObj.state.rgb.join(', ')}
          *h*: ${lightObj.state.hue} | *s*: ${lightObj.state.sat} | *b*: ${lightObj.state.bri}`;
   }
 
@@ -34,14 +34,14 @@ class MessageBuilder {
   groups(groupsObj) {
     return _.map(groupsObj, (group, id) => {
       return `*${group.name}* - id: \`${id}\`
-      lights: ${group.lights.join(',')}`;
+      lights: ${group.lights.join(', ')}`;
     }).join('\n');
   }
 
   groupsKeyboard(groupsObj) {
     const groups = [['0 - All lights']];
     const realGroups = _.map(groupsObj, (group, id) => {
-      return [`${id} - ${group.name} - lights: ${group.lights.join(',')}`];
+      return [`${id} - ${group.name} - lights: ${group.lights.join(', ')}`];
     });
     return groups.concat(realGroups);
   }
@@ -55,14 +55,14 @@ class MessageBuilder {
   scenes(scenesObj) {
     return _.map(scenesObj, (scene, id) => {
       return `*${createFriendlySceneName(scene.name)}* - id: \`${id}\`
-      lights: ${scene.lights.join(',')}`;
+      lights: ${scene.lights.join(', ')}`;
     }).join('\n');
   }
 
   // TODO: this isn't really useful, maybe crop
   scenesKeyboard(scenesObj) {
     return _.map(scenesObj, (scene, id) => {
-      return [`${id} ${createFriendlySceneName(scene.name)} - l: ${scene.lights.join(',')}`];
+      return [`${id} ${createFriendlySceneName(scene.name)} - l: ${scene.lights.join(', ')}`];
     });
   }
 
