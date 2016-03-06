@@ -106,13 +106,14 @@ function sendCommands(messageSender) {
   response.push('\n*GUI commands:*');
   response.push('/hue to start controlling your lights using the telegram keyboard');
   response.push('\n*Text commands:*');
+  response.push('\n*Listing lights, groups or scenes:*');
   response.push('`/ls|list [lights, groups, scenes]` List a resource');
   response.push('`/l|light [id]` Show a light\'s state and attributes');
   response.push('`/g|group [id]` Show a group\'s state and attributes');
   response.push('\n*Light / Group manipulation :*');
   response.push('`/l|light [id] [command] <value>`');
   response.push('`/g|group [id] [command] <value>`');
-  response.push('*The following commands are supported for light / group manipulation :*');
+  response.push('\n*The following commands are supported for light / group manipulation :*');
   response.push('`on | off` Turn a light or a group on or off');
   response.push('`preset <red|energize|...>` Apply a preset from the config file to a light or group.'); // eslint-disable-line max-len
   response.push('`scene <sceneId>` Apply a scene to a group, use group 0 for the group defined in the scene or use another group to apply the scene to the defined group *and* the specified group.'); // eslint-disable-line max-len

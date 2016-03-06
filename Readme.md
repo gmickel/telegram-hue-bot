@@ -99,8 +99,6 @@ The following are valid commands:
 
 `hue <0-65535>` Set the hue of a group or light
 
-`xy <0-255>` Set the hue x and y coordinates of a color in CIE color space of a group or light
-
 `rgb <255,255,255>` Set the colour using RGB of a group or light
 
 The following command is only valid for groups:
