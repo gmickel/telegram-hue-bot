@@ -25,7 +25,8 @@
     "package:upgrade": "./node_modules/.bin/ncu -u",
     "postinstall": "npm run compile",
     "pre-commit": "npm run test",
-    "start": "node dist/index.js"
+    "start": "npm run compile && node dist/index.js",
+    "dev": "node dist/index.js"
   },
   "author": "Gordon Mickel <gordon.mickel@gmail.com>",
   "license": "MIT",
