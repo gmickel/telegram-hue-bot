@@ -366,15 +366,23 @@ bot.on('message', (msg) => {
     return keyboardControls.sendList(message);
   }
 
-  if (currentState === state.LIGHT || currentState === state.GROUP) {
+  if (currentState === state.LIGHT
+    || currentState === state.GROUP
+    || currentState === state.SCENE) {
     const resourceId = message.split(' ')[0];
-    logger.debug(`Keyboard controls: ${fromId} requested the ${currentState} commands for ${resourceId}`);
+    logger.debug(
+      `Keyboard controls: ${fromId} requested the ${currentState} commands for ${resourceId}
+      `);
     if (currentState === state.LIGHT) {
       return keyboardControls.sendLightCommands(resourceId);
     }
 
     if (currentState === state.GROUP) {
       return keyboardControls.sendGroupCommands(resourceId);
+    }
+
+    if (currentState === state.SCENE) {
+      return keyboardControls.sendSceneCommands(resourceId);
     }
   }
 
@@ -407,6 +415,16 @@ bot.on('message', (msg) => {
         } else {
           return keyboardControls.sendValues(message);
         }
+      }
+
+      case state.SCENE: {
+        const groupId = parseInt(message.split(' ')[0], 10);
+        if (!Number.isInteger(groupId)) {
+          logger.error(`Apply scene: invalid group id \`${message.split(' ')[0]}\``);
+          return messageSender.send(new Error(`Invalid group id \`${message.split(' ')[0]}\``));
+        }
+
+        return keyboardControls.setGroupState(groupId, resource, resourceId);
       }
 
       default: {

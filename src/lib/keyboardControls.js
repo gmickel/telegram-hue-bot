@@ -78,6 +78,7 @@ class KeyboardControls {
           .then((results) => {
             const keyboard = MessageBuilder.scenesKeyboard(results);
             this.cache.set(`state${this.user.id}`, state.SCENE);
+            this.cache.set(`resource${this.user.id}`, state.SCENE);
             return this.sender.send('Please choose a scene', keyboard);
           })
           .catch((error) => {
@@ -132,19 +133,32 @@ class KeyboardControls {
       });
   }
 
+  sendSceneCommands(sceneId) {
+    return this.hueApi.groups()
+      .then((results) => {
+        const textMessage = `Please choose a group to apply the scene to.
+Group \`0\` applies the scene to the lights which are part of the scene.
+Using a different \`group id\` applies the scene to the lights in that group
+and the lights which are part of the scene`;
+        const keyboard = MessageBuilder.groupsKeyboard(results);
+        this.cache.set(`state${this.user.id}`, state.COMMAND);
+        this.cache.set(`resourceId${this.user.id}`, sceneId);
+        return this.sender.send(textMessage, keyboard);
+      })
+      .catch((error) => {
+        this.clearCache();
+        this.sendResources();
+        logger.error(error);
+        return this.sender.send(new Error('Something went wrong!'));
+      });
+  }
+
   sendValues(command) {
     const resource = this.cache.get(`resource${this.user.id}`);
     const hueCommand = validCommands.keyboardCommands[resource][command];
     this.cache.set(`state${this.user.id}`, state.VALUE);
     this.cache.set(`command${this.user.id}`, hueCommand);
     const textMessage = `Please choose a \`${command}\` value or enter a value by hand`;
-
-    //TODO send write config object based on command
-    // get scenes
-    //     "values": {
-    // "bri": {
-    // change to just bri
-
     const keyboard = MessageBuilder.valuesKeyboard(hueCommand, this.config);
     return this.sender.send(textMessage, keyboard);
   }
