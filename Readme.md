@@ -66,6 +66,8 @@ Sending `/quick` or `/q` to the bot will display a pre-populated keyboard with s
 
 ### Controlling your hue using the telegram keyboard
 Sending `/hue` to the bot will display a telegram keyboard that allows you to manipulate your lights and groups using the displayed buttons.
+Sending `/clear` clears all previously entered commands, this restarts the telegram keyboard command flow
+
 
 ### Controlling your hue using text commands
 

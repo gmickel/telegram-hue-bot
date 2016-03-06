@@ -101,10 +101,11 @@ function sendCommands(messageSender) {
   const response = [`Hi ${getTelegramName(messageSender.fromId)}!`];
   response.push('Below is a list of commands:');
   response.push('\n*General commands:*');
-  response.push('/help displays this list of commands');
-  response.push('/quick to display the quick command keyboard');
+  response.push('`/help` displays this list of commands');
+  response.push('`/quick` to display the quick command keyboard');
   response.push('\n*GUI commands:*');
-  response.push('/hue to start controlling your lights using the telegram keyboard');
+  response.push('`/hue` to start controlling your lights using the telegram keyboard');
+  response.push('`/clear` clears all previously entered commands, ie. restarts the current keyboard control flow'); // eslint-disable-line max-len
   response.push('\n*Text commands:*');
   response.push('\n*Listing lights, groups or scenes:*');
   response.push('`/ls|list [lights, groups, scenes]` List a resource');
@@ -240,6 +241,19 @@ bot.on('message', (msg) => {
   if (/^\/(?:[hH]|[hH]elp)$/g.test(message)) {
     logger.debug(`user: ${fromId}, message: sent \'/help\' command`);
     return sendCommands(messageSender);
+  }
+
+  /*
+   * handle clear command
+   */
+  if (/^\/[cC]lear$/g.test(message)) {
+    logger.debug(`user: ${fromId}, message: sent \'/clear\' command`);
+    const keyboardControls =
+      new KeyboardControls(bot, user, chatId, msgId, config, cache, hueCommands, messageSender);
+    keyboardControls.clearCache();
+    logger.debug(`user: ${fromId}, \'/clear\' command successfully executed`);
+    keyboardControls.sendResources();
+    return messageSender.send('Successfully cleared all previous commands');
   }
 
   /**
