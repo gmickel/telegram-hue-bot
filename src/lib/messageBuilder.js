@@ -9,6 +9,7 @@ class MessageBuilder {
     return _.map(lightsObj, (light, id) => {
       return `*${light.name}*
        *id*: \`${id}\` | on: ${light.state.on ? 'yes' : 'no'}
+       *xy*: ${light.state.xy.join(', ')} | *rgb*: ${light.state.rgb.join(', ')}
         *h*: ${light.state.hue} | *s*: ${light.state.sat} | *b*: ${light.state.bri}`;
     }).join('\n');
   }
@@ -21,7 +22,8 @@ class MessageBuilder {
   }
 
   light(lightObj) {
-    return `*${lightObj.name}* | *on*: ${lightObj.state.on ? 'yes' : 'no'}
+    return `*${lightObj.name}*
+         *on*: ${lightObj.state.on ? 'yes' : 'no'}
          *xy*: ${lightObj.state.xy.join(', ')} | *rgb*: ${lightObj.state.rgb.join(', ')}
          *h*: ${lightObj.state.hue} | *s*: ${lightObj.state.sat} | *b*: ${lightObj.state.bri}`;
   }

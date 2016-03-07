@@ -24,7 +24,7 @@ class Hue {
     const resource = args[1];
     switch (resource) {
       case 'lights': {
-        return this.hueApi.lights()
+        return this.hueApi.lightsWithRGB()
           .then((results) => {
             return MessageBuilder.lights(results);
           })
