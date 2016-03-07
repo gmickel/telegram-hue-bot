@@ -52,9 +52,10 @@ class KeyboardControls {
             return this.sender.send('Please choose a light', keyboard);
           })
           .catch((error) => {
-            this.clearCache();
             logger.error(error);
-            return this.sender.send(new Error('Something went wrong!'));
+            this.clearCache();
+            this.sender.send(new Error('Something went wrong!'));
+            return this.sendResources();
           });
       }
 
@@ -67,9 +68,10 @@ class KeyboardControls {
             return this.sender.send('Please choose a group', keyboard);
           })
           .catch((error) => {
-            this.clearCache();
             logger.error(error);
-            return this.sender.send(new Error('Something went wrong!'));
+            this.clearCache();
+            this.sender.send(new Error('Something went wrong!'));
+            return this.sendResources();
           });
       }
 
@@ -82,17 +84,18 @@ class KeyboardControls {
             return this.sender.send('Please choose a scene', keyboard);
           })
           .catch((error) => {
-            this.clearCache();
             logger.error(error);
-            return this.sender.send(new Error('Something went wrong!'));
+            this.clearCache();
+            this.sender.send(new Error('Something went wrong!'));
+            return this.sendResources();
           });
       }
 
       default: {
         this.clearCache();
-        this.sendResources();
         logger.warn(`State: ${state} message: ${resource} - Invalid resource`);
-        return this.sender.send(new Error(`Invalid resource \`${resource}\``));
+        this.sender.send(new Error(`Invalid resource \`${resource}\``));
+        return this.sendResources();
       }
     }
   }
@@ -108,10 +111,10 @@ class KeyboardControls {
         return this.sender.send(textMessage, keyboard);
       })
       .catch((error) => {
-        this.clearCache();
-        this.sendResources();
         logger.error(error);
-        return this.sender.send(new Error('Something went wrong!'));
+        this.clearCache();
+        this.sender.send(new Error('Something went wrong!'));
+        return this.sendResources();
       });
   }
 
@@ -126,10 +129,10 @@ class KeyboardControls {
         return this.sender.send(textMessage, keyboard);
       })
       .catch((error) => {
-        this.clearCache();
-        this.sendResources();
         logger.error(error);
-        return this.sender.send(new Error('Something went wrong!'));
+        this.clearCache();
+        this.sender.send(new Error('Something went wrong!'));
+        return this.sendResources();
       });
   }
 
@@ -146,10 +149,10 @@ and the lights which are part of the scene`;
         return this.sender.send(textMessage, keyboard);
       })
       .catch((error) => {
-        this.clearCache();
-        this.sendResources();
         logger.error(error);
-        return this.sender.send(new Error('Something went wrong!'));
+        this.clearCache();
+        this.sender.send(new Error('Something went wrong!'));
+        return this.sendResources();
       });
   }
 
@@ -166,8 +169,8 @@ and the lights which are part of the scene`;
   setLightState(resourceId, command, value) {
     this.hueCommands.lights(resourceId, command, value)
       .then((msg) => {
-        this.clearCache();
         this.sender.send(msg);
+        this.clearCache();
         return this.sendResources();
       })
       .catch((error) => {
@@ -181,8 +184,8 @@ and the lights which are part of the scene`;
   setGroupState(resourceId, command, value) {
     this.hueCommands.groups(resourceId, command, value)
       .then((msg) => {
-        this.clearCache();
         this.sender.send(msg);
+        this.clearCache();
         return this.sendResources();
       })
       .catch((error) => {
