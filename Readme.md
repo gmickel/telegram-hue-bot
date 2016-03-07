@@ -3,8 +3,13 @@
 Bot which lets you or others control [Hue](http://www.meethue.com/) Lights via the messaging service [Telegram](https://telegram.org/).
 
 ## Screenshots
+### Text Commands
+![List Example](/screenshots/list-example.jpg?raw=true)
+### Keyboard Control
+![Step 1](/screenshots/step1.jpg?raw=true) ![Step 2](/screenshots/step2.jpg?raw=true)
 
-![List Example](/screenshots/list-example.jpg?raw=true "List Example") ![List Example](/screenshots/list-example.jpg?raw=true "List Example")
+![Step 3](/screenshots/step4.jpg?raw=true) ![Step 4](/screenshots/step4.jpg?raw=true)
+
 
 
 Contact [@BotFather](http://telegram.me/BotFather) on Telegram to create and get a bot token.
