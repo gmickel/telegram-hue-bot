@@ -108,7 +108,7 @@ The following are valid commands:
 
 `hue <0-65535>` Set the hue of a group or light
 
-`rgb <255,255,255>` Set the colour using RGB of a group or light
+`rgb <255,255,255>` Set the colour using RGB of a light (groups NYI)
 
 The following command is only valid for groups:
 

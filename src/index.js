@@ -122,7 +122,7 @@ function sendCommands(messageSender) {
   response.push('`sat <0-255>` Set the saturation of a group or light.');
   response.push('`hue <0-65535>` Set the hue of a group or light.');
   response.push('`xy <0-255>` Set the hue x and y coordinates of a color in CIE color space of a group or light.'); // eslint-disable-line max-len
-  response.push('`rgb <255,255,255>` Set the colour using RGB of a group or light.');
+  response.push('`rgb <255,255,255>` Set the colour using RGB of a light.');
 
   return messageSender.send(response.join('\n'));
 }
