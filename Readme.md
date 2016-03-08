@@ -8,7 +8,7 @@ Bot which lets you or others control [Hue](http://www.meethue.com/) Lights via t
 ### Keyboard Control
 ![Step 1](/screenshots/step1.jpg?raw=true) ![Step 2](/screenshots/step2.jpg?raw=true)
 
-![Step 3](/screenshots/step4.jpg?raw=true) ![Step 4](/screenshots/step4.jpg?raw=true)
+![Step 3](/screenshots/step3.jpg?raw=true) ![Step 4](/screenshots/step4.jpg?raw=true)
 
 Getting Started
 ---------------
