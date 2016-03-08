@@ -10,16 +10,13 @@ Bot which lets you or others control [Hue](http://www.meethue.com/) Lights via t
 
 ![Step 3](/screenshots/step4.jpg?raw=true) ![Step 4](/screenshots/step4.jpg?raw=true)
 
-
-
-Contact [@BotFather](http://telegram.me/BotFather) on Telegram to create and get a bot token.
-
 Getting Started
 ---------------
 
 ## Prerequisites
 - [Node.js](http://nodejs.org) v4.2.x+
 - A Telegram bot - see [here](<https://core.telegram.org/bots#botfather>) for instructions
+- Contact [@BotFather](http://telegram.me/BotFather) on Telegram to create and get a bot token.
 
 ## Installation
 
