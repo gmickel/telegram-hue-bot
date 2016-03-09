@@ -11,7 +11,8 @@ try {
   acl = JSON.parse(fs.readFileSync(aclListFile, 'utf8'));
 } catch (err) {
   if (err.name === 'SyntaxError') {
-    throw new Error('Invalid acl file, please make sure the file is in JSON format.');
+    logger.error('Invalid acl file, please make sure the file is in JSON format');
+    process.exit(0);
   }
 
   // config file not found

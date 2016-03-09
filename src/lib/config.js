@@ -60,23 +60,27 @@ try {
 
   // JSON file is not correct
   if (err.name === 'SyntaxError') {
-    throw new Error('Invalid configuration file, please make sure the file is in JSON format.');
+    logger.error('Invalid configuration file, please make sure the file is in JSON format.');
+    process.exit(0);
   }
 
   // config file not found
   if (err.code === 'ENOENT') {
     logger.warn('config file not found, copying from template');
     fs.copySync(configFileTemplate, configFile);
-    throw new Error('Please enter the required parameters in the config file.');
+    logger.error('Please enter the required parameters in the config file.');
+    process.exit(0);
   }
 }
 
 if (_.isEmpty(config.telegram.botToken)) {
-  throw new Error('Please enter the bot token in the config file');
+  logger.error('Please enter the bot token in the config file');
+  process.exit(0);
 }
 
 if (_.isEmpty(config.bot.password)) {
-  throw new Error('Please enter a password for your bot in the config file');
+  logger.error('Please enter a password for your bot in the config file');
+  process.exit(0);
 }
 
 if (_.isEmpty(config.hue.host) || _.isEmpty(config.hue.user)) {

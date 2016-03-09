@@ -14,7 +14,6 @@ class MessageBuilder {
     }).join('\n');
   }
 
-  // TODO: save the ID here for future use
   lightsKeyboard(lightsObj) {
     return _.map(lightsObj, (light, id) => {
       return [`${id} - ${light.name} | on: ${light.state.on ? 'yes' : 'no'}`];
@@ -61,7 +60,6 @@ class MessageBuilder {
     }).join('\n');
   }
 
-  // TODO: this isn't really useful, maybe crop
   scenesKeyboard(scenesObj) {
     return _.map(scenesObj, (scene, id) => {
       return [`${id} ${createFriendlySceneName(scene.name)} - l: ${scene.lights.join(', ')}`];

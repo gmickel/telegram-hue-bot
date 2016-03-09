@@ -23,8 +23,6 @@ class MessageSender {
     let options;
     if (message instanceof Error) {
       logger.warn('user: %s message: %s', this.username, message.message);
-
-      // TODO: readd reply_to_message_id: this.origMsgId ?
       message = message.message;
       options = {
         parse_mode: 'Markdown',

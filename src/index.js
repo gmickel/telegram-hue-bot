@@ -65,7 +65,8 @@ function verifyAdmin(userId) {
 function updateACL() {
   fs.writeFile(`${__dirname}/../config/acl.json`, JSON.stringify(acl, null, 4), (err) => {
     if (err) {
-      throw new Error(err);
+      logger.error(err.message);
+      process.exit(0);
     }
 
     logger.info('the access control list was updated');
@@ -183,7 +184,8 @@ bot.getMe()
     logger.info(`hue bot ${msg.username} initialized`);
   })
   .catch((err) => {
-    throw new Error(err);
+    logger.error(err.message);
+    process.exit(0);
   });
 
 bot.on('message', (msg) => {
