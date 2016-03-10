@@ -13,7 +13,8 @@ Bot which lets you or others control [Hue](http://www.meethue.com/) Lights via t
 ## Changelog
 - v1.0.0 - Initial release
 - v2.0.0 - Add custom keyboard control
-- v2.2.0 - Can now set RGB values on entire groups
+- v2.2.0 - General cleanup
+- v2.3.0 - Can now set RGB values on entire groups
 
 Getting Started
 ---------------
