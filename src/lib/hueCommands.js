@@ -284,7 +284,25 @@ class Hue {
       }
 
       case 'rgb': {
-        return Promise.reject('Setting RGB values for groups is not yet implemented.');
+        let [r, g, b] = value.split(',');
+        if (!(r && g && b)) {
+          return Promise.reject(`Invalid RGB value ${value}, please use the following format /group 1 rgb \`100,100,100\``);
+        }
+
+        [r, g, b] = [r, g, b].map(item => parseInt(item, 10));
+
+        if ((_.isNaN(r) || _.isNaN(g) || _.isNaN(b))) {
+          return Promise.reject(`Invalid RGB value ${value}, please use the following format /group 1 rgb \`100,100,100\``);
+        }
+
+        state.rgb([r, g, b]);
+        return this.hueApi.setGroupState(groupId, state)
+          .then(() => {
+            return 'Command successful';
+          })
+          .catch((error) => {
+            return error.message;
+          });
       }
 
       case 'preset': {
