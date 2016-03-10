@@ -1,6 +1,6 @@
 {
   "name": "telegram-hue-bot",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Node.js Telegram Bot communicating with the Philips Hue Bridge and Lights",
   "main": "dist/index.js",
   "bugs": {
