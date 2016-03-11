@@ -15,7 +15,10 @@ import state from './lib/state';
 
 import _ from 'lodash';
 
-const bot = new TelegramBot(config.telegram.botToken, { polling: true });
+const bot = new TelegramBot(config.telegram.botToken, { polling: {
+  timeout: 20,
+  interval: 500
+} });
 const hueCommands = new Hue(config);
 const cache = new NodeCache({ stdTTL: 0, checkperiod: 150 });
 
