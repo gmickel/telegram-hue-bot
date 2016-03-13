@@ -20,7 +20,6 @@
     "startlinter": "eslint_d -c ./.eslintrc start",
     "stoplinter": "eslint_d -c ./.eslintrc stop",
     "jscs": "jscs src test",
-    "prepublish": "npm run compile",
     "preversion": "npm run lint && npm run compile",
     "watch": "babel --presets es2015-node -d dist/ src/ --watch --source-maps true",
     "package:check": "./node_modules/.bin/ncu",
