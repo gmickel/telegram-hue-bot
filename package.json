@@ -16,7 +16,7 @@
     "compile": "babel -d dist/ src/",
     "compileDev": "babel --presets es2015-node -d dist/ src/ --source-maps true",
     "fix": "eslint_d --fix -c ./.eslintrc src test",
-    "lint": "eslint_d -c ./.eslintrc src test --ext .js && jscs src test",
+    "lint": "eslint_d -c ./.eslintrc src --ext .js && jscs src",
     "startlinter": "eslint_d -c ./.eslintrc start",
     "stoplinter": "eslint_d -c ./.eslintrc stop",
     "jscs": "jscs src test",
