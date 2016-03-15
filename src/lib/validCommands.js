@@ -5,7 +5,8 @@ export default {
       Off: 'off',
       Preset: 'preset',
       Brightness: 'bri',
-      Saturation: 'sat'
+      Saturation: 'sat',
+      Effect: 'effect'
     },
     group: {
       On: 'on',
@@ -13,7 +14,8 @@ export default {
       Preset: 'preset',
       Scene: 'scene',
       Brightness: 'bri',
-      Saturation: 'sat'
+      Saturation: 'sat',
+      Effect: 'effect'
     }
   },
   list: [
@@ -29,7 +31,8 @@ export default {
     'sat',
     'hue',
     'rgb',
-    'scene'
+    'scene',
+    'effect'
   ],
   light: [
     'on',
@@ -38,6 +41,7 @@ export default {
     'bri',
     'sat',
     'hue',
-    'rgb'
+    'rgb',
+    'effect'
   ]
-}
+};

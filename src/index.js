@@ -278,38 +278,18 @@ bot.on('message', (msg) => {
   }
 
   /**
-   * matches the all command
-   * used to easily manipulate group 0 (all lights)
-   */
-  if ((match = /^\/[aA](?:ll)? (.+)$/g.exec(message)) !== null) {
-    logger.debug(`user: ${fromId}, sent ${match[0]}`);
-
-    const groupId = 0;
-    const command = match[1];
-
-    if (command) {
-      if (validCommands.group.indexOf(command) === -1) {
-        return messageSender.send(new Error(`Command \`${command}\` doesn't exist`));
-      }
-    }
-
-    return hueCommands.groups(groupId, command)
-      .then((groups) => {
-        messageSender.send(groups);
-      })
-      .catch((error) => {
-        messageSender.send(new Error(error));
-      });
-  }
-
-  /**
-   * matches the group command
+   * matches the group and the all command
    * used to manipulate groups
    */
-  if ((match = /^\/[gG](?:roup)? (.+)$/g.exec(message)) !== null) {
+  if (((match = /^\/[gG](?:roup)? (.+)$/g.exec(message)) !== null ||
+    ((match = /^\/[aA](?:ll)? (.+)$/g.exec(message)) !== null))) {
     logger.debug(`user: ${fromId}, sent ${match[0]}`);
-
-    const [groupId, command, value] = match[1].split(' ');
+    const parameters = match[1].split(' ');
+    let [groupId, command, value] = parameters;
+    if (/^\/[aA](?:ll)? (.+)$/.test(message)) {
+      groupId = 0;
+      [command, value] = parameters;
+    }
 
     if (!command) {
       return hueCommands.group(groupId)
@@ -343,7 +323,8 @@ bot.on('message', (msg) => {
 
   if ((match = /^\/[lL](?:ight)? (.+)$/g.exec(message)) !== null) {
     logger.debug(`user: ${fromId}, sent ${match[0]}`);
-    const [lightId, command, value] = match[1].split(' ');
+    const parameters = match[1].split(' ');
+    const [lightId, command, value] = parameters;
 
     if (!command) {
       return hueCommands.light(lightId)
