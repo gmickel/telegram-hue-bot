@@ -118,6 +118,7 @@ function sendCommands(messageSender) {
   response.push('\n*Light / Group manipulation :*');
   response.push('`/l|light [id] [command] <value>`');
   response.push('`/g|group [id] [command] <value>`');
+  response.push('`/a|all [command] <value>`. Group commands are allowed.');
   response.push('\n*The following commands are supported for light / group manipulation :*');
   response.push('`on | off` Turn a light or a group on or off');
   response.push('`preset <red|energize|...>` Apply a preset from the config file to a light or group.'); // eslint-disable-line max-len

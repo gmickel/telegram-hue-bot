@@ -102,6 +102,8 @@ Send the bot a message with the resource name
 
 `/g|group [id] [command] <value>`
 
+`/a|all [command] <value>` - Group commands are allowed
+
 The following are valid commands:
 
 `on | off` Turn a light or a group on or off
