@@ -17,14 +17,14 @@ class KeyboardControls {
     this.cache = cache;
     this.chatId = chatId;
     this.origMsgId = origMsgId;
-    this.username = this.user.username || (this.user.first_name + (' ' + this.user.last_name || ''));
+    this.username = this.user.username || (this.user.first_name + (' ' + this.user.last_name || '')); // eslint-disable-line max-len
     this.sender = messageSender;
   }
 
   clearCache() {
     logger.debug(`user: ${this.username}, message: clearing keyboard controls cache`);
 
-    var cacheItems = [
+    const cacheItems = [
       'resource', 'light', 'group',
       'scene', 'id', 'command', 'state'
     ];
@@ -167,7 +167,7 @@ and the lights which are part of the scene`;
   }
 
   setLightState(resourceId, command, value) {
-    this.hueCommands.lights(resourceId, command, value)
+    this.hueCommands.lightState(resourceId, command, value)
       .then((msg) => {
         this.sender.send(msg);
         this.clearCache();
@@ -178,11 +178,11 @@ and the lights which are part of the scene`;
         this.sendResources();
         logger.error(error);
         return this.sender.send(new Error('Something went wrong!'));
-      })
+      });
   }
 
   setGroupState(resourceId, command, value) {
-    this.hueCommands.groups(resourceId, command, value)
+    this.hueCommands.groupState(resourceId, command, value)
       .then((msg) => {
         this.sender.send(msg);
         this.clearCache();
@@ -193,7 +193,7 @@ and the lights which are part of the scene`;
         this.sendResources();
         logger.error(error);
         return this.sender.send(new Error('Something went wrong!'));
-      })
+      });
   }
 }
 
