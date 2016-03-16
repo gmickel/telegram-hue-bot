@@ -26,6 +26,7 @@
     "space-before-function-paren": [0],
     "prefer-arrow-callback": [0],
     "strict": [0],
-    "no-cond-assign": [2, "except-parens"]
+    "no-cond-assign": [2, "except-parens"],
+    "arrow-body-style": [2, "always"]
   }
 }
