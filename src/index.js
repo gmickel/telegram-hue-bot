@@ -308,7 +308,7 @@ bot.on('message', (msg) => {
       }
     }
 
-    return hueCommands.groups(groupId, command, value)
+    return hueCommands.groupState(groupId, command, value)
       .then((groups) => {
         messageSender.send(groups);
       })
@@ -343,7 +343,7 @@ bot.on('message', (msg) => {
       }
     }
 
-    return hueCommands.lights(lightId, command, value)
+    return hueCommands.lightState(lightId, command, value)
       .then((lights) => {
         messageSender.send(lights);
       })
@@ -454,7 +454,7 @@ bot.on('message', (msg) => {
 
     if (command.match(/(preset|scene)/) === null) {
       if (message.endsWith('%')) {
-        const key = message.substring(0, message.length - 1);
+        const key = parseInt(message, 10);
         value = config.hue.values[command][key];
       } else {
         value = parseInt(message, 10);
