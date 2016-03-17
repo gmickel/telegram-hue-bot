@@ -50,7 +50,7 @@ class MessageBuilder {
   getGroupIds(groupsObj) {
     return _.map(groupsObj, (group, id) => {
       return id;
-    })
+    });
   }
 
   scenes(scenesObj) {
@@ -70,7 +70,7 @@ class MessageBuilder {
     const keyboard = [];
     const commands = arrayToChunks(Object.keys(validCommands.keyboardCommands.light), 2);
     commands.forEach((row) => {
-      let rowElement = row.map((item) => item);
+      const rowElement = row.map((item) => item);
       keyboard.push(rowElement);
     });
 
@@ -81,7 +81,7 @@ class MessageBuilder {
     const keyboard = [];
     const commands = arrayToChunks(Object.keys(validCommands.keyboardCommands.group), 2);
     commands.forEach((row) => {
-      let rowElement = row.map((item) => item);
+      const rowElement = row.map((item) => item);
       keyboard.push(rowElement);
     });
 
@@ -93,7 +93,7 @@ class MessageBuilder {
     if (command === 'preset') {
       const presets = arrayToChunks(Object.keys(config.hue.presets), 2);
       presets.forEach((row) => {
-        let rowElement = row.map((item) => item);
+        const rowElement = row.map((item) => item);
         keyboard.push(rowElement);
       });
     } else {

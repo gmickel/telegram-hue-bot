@@ -17,7 +17,8 @@ class KeyboardControls {
     this.cache = cache;
     this.chatId = chatId;
     this.origMsgId = origMsgId;
-    this.username = this.user.username || (this.user.first_name + (' ' + this.user.last_name || '')); // eslint-disable-line max-len
+    this.username = this.user.username ||
+      (this.user.first_name + (` ${this.user.last_name}` || ''));
     this.sender = messageSender;
   }
 
@@ -39,7 +40,7 @@ class KeyboardControls {
     keyboard.push(validCommands.list);
     this.cache.set(`state${this.user.id}`, state.RESOURCE);
     return this.sender.send('Please choose a light, group or scene', keyboard);
-  };
+  }
 
   sendList(resource) {
     switch (resource) {

@@ -10,7 +10,8 @@ class MessageSender {
     this.fromId = fromId;
     this.chatId = chatId;
     this.origMsgId = origMsgId;
-    this.username = this.user.username || (this.user.first_name + (' ' + this.user.last_name || ''));
+    this.username = this.user.username ||
+      (this.user.first_name + (` ${this.user.last_name}` || ''));
   }
 
   /**
@@ -42,7 +43,7 @@ class MessageSender {
         selective: true,
         disable_notification: true,
         reply_markup: JSON.stringify({
-          keyboard: keyboard,
+          keyboard,
           one_time_keyboard: true,
           resize_keyboard: true,
           selective: true

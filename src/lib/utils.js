@@ -9,7 +9,7 @@ export function arrayToChunks(array, chunkSize) {
 export function createFriendlySceneName(name) {
   const index = name.search(/on\s\d.*/);
   let friendlyName;
-  if (index  !== -1) {
+  if (index !== -1) {
     friendlyName = name.substring(0, index);
   } else {
     return name;

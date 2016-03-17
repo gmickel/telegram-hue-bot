@@ -8,21 +8,22 @@ const configFileTemplate = `${configFile}.template`;
 
 let config;
 
-function updateConfig(config) {
-  fs.writeFile(`${__dirname}/../../config/config.json`, JSON.stringify(config, null, 4), (err) => {
-    if (err) {
-      throw new Error(err);
-    }
+function updateConfig(configToUpdate) {
+  fs.writeFile(`${__dirname}/../../config/config.json`,
+    JSON.stringify(configToUpdate, null, 4), (err) => {
+      if (err) {
+        throw new Error(err);
+      }
 
-    logger.info('the config file has been updated, please start the telegram-hue-bot again');
-    process.exit(0);
-  });
+      logger.info('the config file has been updated, please start the telegram-hue-bot again');
+      process.exit(0);
+    });
 }
 
 function sleep(time) {
   return new Promise(resolve => {
-    setTimeout(resolve, time)
-  })
+    setTimeout(resolve, time);
+  });
 }
 
 function discoverBridge() {
@@ -38,7 +39,7 @@ function discoverBridge() {
     })
     .catch((error) => {
       throw new Error(error.message);
-    })
+    });
 }
 
 function createUser() {
@@ -57,7 +58,6 @@ try {
   logger.info('config file found %s', configFile);
   config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
 } catch (err) {
-
   // JSON file is not correct
   if (err.name === 'SyntaxError') {
     logger.error('Invalid configuration file, please make sure the file is in JSON format.');
@@ -89,7 +89,9 @@ if (_.isEmpty(config.hue.host) || _.isEmpty(config.hue.user)) {
       if (_.isEmpty(config.hue.user)) {
         const delay = 20000;
         logger.warn('Hue Bridge user not specified, creating user');
-        logger.warn(`Starting create user in ${delay / 1000} seconds, please press the link button on your Hue Bridge`);
+        logger.warn(
+          `Creating user in ${delay / 1000} seconds, press the link button on your Hue Bridge`
+        );
         return sleep(delay);
       } else {
         updateConfig(config);
@@ -106,7 +108,7 @@ if (_.isEmpty(config.hue.host) || _.isEmpty(config.hue.user)) {
         logger.error(error.message);
         process.exit(0);
       });
-    })
+    });
 }
 
 logger.info('Config is valid, starting bot');
