@@ -71,6 +71,13 @@ class Hue {
           .catch(error => error.message);
       }
 
+      case 'effect': {
+        state.effect(value);
+        return this.hueApi.setLightState(lightId, state)
+          .then(() => 'Command successful')
+          .catch(error => error.message);
+      }
+
       case 'rgb': {
         let [r, g, b] = value.split(',');
         if (!(r && g && b)) {
@@ -138,6 +145,13 @@ class Hue {
       case 'off': {
         state.off();
         return this.hueApi.setGroupState(groupId, state)
+          .then(() => 'Command successful')
+          .catch(error => error.message);
+      }
+
+      case 'effect': {
+        state.effect(value);
+        return this.hueApi.setGroupState(lightId, state)
           .then(() => 'Command successful')
           .catch(error => error.message);
       }
