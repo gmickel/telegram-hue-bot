@@ -127,6 +127,7 @@ function sendCommands(messageSender) {
   response.push('`sat <0-255>` Set the saturation of a group or light.');
   response.push('`hue <0-65535>` Set the hue of a group or light.');
   response.push('`rgb <255,255,255>` Set the colour using RGB of a group or light.');
+  response.push('`effect <colorloop|none>` Set the effect of a group or light.');
 
   return messageSender.send(response.join('\n'));
 }
