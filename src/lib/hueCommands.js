@@ -72,6 +72,13 @@ class Hue {
       }
 
       case 'effect': {
+        if (value === 'on') {
+          value = 'colorloop';
+        }
+        if (value === 'off') {
+          value = 'none';
+        }
+
         state.effect(value);
         return this.hueApi.setLightState(lightId, state)
           .then(() => 'Command successful')
@@ -150,8 +157,15 @@ class Hue {
       }
 
       case 'effect': {
+        if (value === 'on') {
+          value = 'colorloop';
+        }
+        if (value === 'off') {
+          value = 'none';
+        }
+
         state.effect(value);
-        return this.hueApi.setGroupState(lightId, state)
+        return this.hueApi.setGroupState(groupId, state)
           .then(() => 'Command successful')
           .catch(error => error.message);
       }
