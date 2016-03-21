@@ -364,6 +364,7 @@ bot.on('message', (msg) => {
       return sendUnauthorizedMsg(messageSender);
     }
 
+    // KeyboardControls start: send list of resources (lights / groups / scenes) to user
     logger.debug(`Keyboard controls: ${fromId} started the keyboard controls`);
     return keyboardControls.sendResources();
   }
@@ -371,11 +372,13 @@ bot.on('message', (msg) => {
   const currentState = cache.get(`state${user.id}`);
   logger.debug(`Keyboard controls: current state: ${currentState}`);
 
+  // Light/Group Selection: send list of lights, groups or scenes to user
   if (currentState === state.RESOURCE) {
     logger.debug(`Keyboard controls: Sending ${message} list to ${fromId}`);
     return keyboardControls.sendList(message);
   }
 
+  // Command Selection: send light / group or scene commands to user
   if (currentState === state.LIGHT
     || currentState === state.GROUP
     || currentState === state.SCENE) {
@@ -396,6 +399,7 @@ bot.on('message', (msg) => {
     }
   }
 
+  // Value Selection: send values for the chosen command to user
   if (currentState === state.COMMAND) {
     const resourceId = cache.get(`resourceId${user.id}`);
     const resource = cache.get(`resource${user.id}`);
@@ -444,6 +448,7 @@ bot.on('message', (msg) => {
     }
   }
 
+  // End of KeyboardControls: Execute command and send success / failure message to user
   if (currentState === state.VALUE) {
     const resourceId = cache.get(`resourceId${user.id}`);
     const resource = cache.get(`resource${user.id}`);
