@@ -90,14 +90,25 @@ class MessageBuilder {
 
   valuesKeyboard(command, config) {
     const keyboard = [];
-    if (command === 'preset') {
-      const presets = arrayToChunks(Object.keys(config.hue.presets), 2);
-      presets.forEach((row) => {
-        const rowElement = row.map((item) => item);
-        keyboard.push(rowElement);
-      });
-    } else {
-      keyboard.push(Object.keys(config.hue.values[command]).map(key => key + '%'));
+    switch (command) {
+      case 'preset': {
+        const presets = arrayToChunks(Object.keys(config.hue.presets), 2);
+        presets.forEach((row) => {
+          const rowElement = row.map((item) => item);
+          keyboard.push(rowElement);
+        });
+        break;
+      }
+
+      case 'effect': {
+        keyboard.push(['colorloop', 'none']);
+        break;
+      }
+
+      default: {
+        // handles all commands that have values set in the config file
+        keyboard.push(Object.keys(config.hue.values[command]).map(key => key + '%'));
+      }
     }
 
     return keyboard;

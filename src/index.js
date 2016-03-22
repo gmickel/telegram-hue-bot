@@ -458,7 +458,7 @@ bot.on('message', (msg) => {
 
     let value = message;
 
-    if (command.match(/(preset|scene)/) === null) {
+    if (command.match(/(preset|scene|effect)/) === null) {
       if (message.endsWith('%')) {
         const key = parseInt(message, 10);
         value = config.hue.values[command][key];
