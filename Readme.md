@@ -16,6 +16,7 @@ Bot which lets you or others control [Hue](http://www.meethue.com/) Lights via t
 - v2.2.0 - General cleanup
 - v2.3.0 - Can now set RGB values on entire groups
 - v2.4.5 - Added effect command
+- v2.5.0 - Added effect command to keyboard controls
 
 Getting Started
 ---------------
